@@ -1,4 +1,5 @@
 const user = require('../models/user.models');
+const review = require("../models/review.models");
 const { userRegistrationValidation } = require("../services/Validation-handler");
 const { statusCodes } = require("../services/statusCodes");
 
@@ -21,7 +22,7 @@ const registerUserWithEmail = async (req, res) => {
                 if (data.code != 0000) {
                     throw new Error('invalid code');
                 }
-                const userData = await user.create(req.body);
+                const userData = await user.create(data);
                 return res.status(statusCodes[201].value).send({ data: userData });
             })
             .catch(async (err) => {
@@ -33,6 +34,17 @@ const registerUserWithEmail = async (req, res) => {
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        const data = await user.find();
+        return res.send(data);
+    } catch (error) {
+        console.log(error);
+        return res.status(statusCodes[500].value).send({ msg: error.message });
+    }
+}
+
 module.exports = {
-    registerUserWithEmail
+    registerUserWithEmail,
+    getAllUsers
 }
