@@ -2,12 +2,15 @@ const user = require('../models/user.models');
 const review = require("../models/review.models");
 const { userRegistrationValidation } = require("../services/Validation-handler");
 const { statusCodes } = require("../services/statusCodes");
+const { v4: uuidv4 } = require('uuid');
+
 
 const registerUserWithEmail = async (req, res) => {
     try {
         let data = req.body;
         const { error } = userRegistrationValidation(data);
         if (error) return res.status(statusCodes[400].value).send({ msg: error.details[0].message });
+        data.uId = uuidv4();
         const checkUnique = new Promise(async (resolve, reject) => {
             const findUser = await user.findOne({ email: data.email });
             const error = findUser !== null ? true : false;
