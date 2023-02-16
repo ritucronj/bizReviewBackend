@@ -1,6 +1,8 @@
 const review = require('../models/review.models');
 const { statusCodes } = require('../services/statusCodes');
 const { createReviewValidation, updateReviewValidation } = require("../services/Validation-handler");
+const { v4: uuidv4 } = require('uuid');
+
 
 const createCompanyReview = async (req, res) => {
     try {
@@ -8,6 +10,7 @@ const createCompanyReview = async (req, res) => {
         let Id = req.params.Id;
         const { error } = createReviewValidation(body);
         if (error) return res.status(statusCodes[400].value).send({ msg: error.details[0].message });
+        body.uId = uuidv4();
         const checkReview = new Promise(async (resolve, reject) => {
             const findAndInsertReview = await review.findOneAndUpdate(
                 { createdBy: Id },
@@ -48,7 +51,7 @@ const readReviewById = async (req, res) => {
                     "reviews.$": 1
                 }
             );
-            console.log(findReview);
+            if (findReview.reviews[0].isDeleted === true) reject(new Error("Something went wrong"));
             const error = findReview === null ? true : false;
             if (error) reject(new Error("No Review Found"));
             resolve(findReview);
@@ -70,22 +73,32 @@ const readAllReviewsByUser = async (req, res) => {
     try {
         let userId = req.params.user;
         const checkReview = new Promise(async (resolve, reject) => {
-            const findReview = await review.find(
+            const findReview = await review.aggregate([
                 {
-                    createdBy: userId,
-                    'reviews.isDeleted': false
-
+                    "$match": {
+                        createdBy: userId
+                    }
+                },
+                {
+                    "$project": {
+                        "reviews": {
+                            "$filter": {
+                                input: "$reviews",
+                                as: "review",
+                                cond: { $eq: ["$$review.isDeleted", false] }
+                            }
+                        }
+                    }
                 }
-            );
+            ])
             console.log(findReview);
-            const error = findReview.length == 0 ? true : false;
+            const error = findReview === null ? true : false;
             if (error) reject(new Error("No Review Found"));
             resolve(findReview);
         });
         checkReview
             .then((result) => {
                 return res.status(statusCodes[200].value).send({ data: result });
-
             })
             .catch((err) => {
                 return res.status(statusCodes[400].value).send({ msg: err.message });
@@ -115,7 +128,6 @@ const updateCompanyReview = async (req, res) => {
                         'reviews.$.description': req.body.description,
                         'reviews.$.rating': req.body.rating,
                         'reviews.$.dateOfExperience': req.body.dateOfExperience,
-
                     }
                 },
                 {
@@ -165,7 +177,6 @@ const deleteReviewById = async (req, res) => {
                     new: true
                 }
             );
-            // console.log(findReviewAndUpdate);
             const error = findReviewAndUpdate === null ? true : false;
             if (error) reject(new Error("No Reviews Found"));
             resolve("Review Successfully Deleted");
@@ -189,8 +200,8 @@ const deleteReviewById = async (req, res) => {
 
 module.exports = {
     createCompanyReview,
-    updateCompanyReview,
     readReviewById,
     readAllReviewsByUser,
+    updateCompanyReview,
     deleteReviewById
 }

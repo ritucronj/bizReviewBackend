@@ -1,10 +1,8 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require('uuid');
 
 const reviews = new mongoose.Schema({
     uId: {
         type: String,
-        default: uuidv4()
     },
     reviewedCompany: {
         type: String

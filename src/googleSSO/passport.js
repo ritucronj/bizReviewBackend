@@ -1,43 +1,6 @@
-require('dotenv').config();
-const express = require('express');
-const app = express();
-const mongoose = require('mongoose');
-const userRoutes = require('./Reviewers-module/routes/user.routes');
-const reviewRoutes = require("./Reviewers-module/routes/review.routes");
-const cors = require('cors');
-const session = require("express-session");
-
-app.use(express.json());
-app.use(cors());
-app.use('/api/users', userRoutes);
-app.use('/api/users/reviews', reviewRoutes);
-
-app.set('view engine', 'ejs');
-
-app.use(session({
-    resave: false,
-    saveUninitialized: true,
-    secret: 'SECRET'
-}));
-
-app.get('/', function (req, res) {
-    res.render('pages/auth');
-});
-
-
-mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true })
-    .then(() => console.log(`MongoDB Connection Successful`))
-    .catch((err) => console.log(err));
-
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Express App running on port ${port}`);
-});
-
-
-
 const passport = require('passport');
+const express = require("express");
+const app = express();
 var userProfile;
 
 app.use(passport.initialize());
@@ -56,8 +19,6 @@ passport.deserializeUser(function (obj, cb) {
     cb(null, obj);
 });
 
-
-
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -70,9 +31,13 @@ passport.use(new GoogleStrategy({
     }
 ));
 
+app.get('/', function (req, res) {
+    res.render('pages/auth');
+});
+
 
 app.get('/auth/google',
-passport.authenticate('google', { scope: ['profile', 'email'] }));
+    passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/error' }),
