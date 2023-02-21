@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUserWithEmail, getAllUsers, ssoRegister } = require("../controller/user.controller");
+const { registerUserWithEmail, getAllUsers, ssoRegisterAndLogin } = require("../controller/user.controller");
 const router = express.Router();
 
 router.get("/hello", (req, res) => {
@@ -7,7 +7,7 @@ router.get("/hello", (req, res) => {
 });
 
 router.post('/register', registerUserWithEmail);
-router.post("/registerSSO", ssoRegister);
+router.post("/registerSSO", ssoRegisterAndLogin);
 router.get("/getAll", getAllUsers);
 
 module.exports = router;
