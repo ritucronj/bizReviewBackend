@@ -8,9 +8,19 @@ const userRegistrationValidation = (data) => {
     return schema.validate(data);
 }
 
+const ssoRegistrationValidation = (data) => {
+    const schema = joi.object({
+        email: joi.string().email().required(),
+        name: joi.string(),
+        picture:joi.string().uri(),
+        email_verified:joi.boolean().required()
+    });
+    return schema.validate(data);
+}
+
 const createReviewValidation = (data) => {
     const schema = joi.object({
-        reviewedCompany:joi.string(),
+        reviewedCompany: joi.string(),
         title: joi.string().required(),
         rating: joi.string().min(1).required(),
         description: joi.string().required(),
@@ -32,5 +42,6 @@ const updateReviewValidation = (data) => {
 module.exports = {
     userRegistrationValidation,
     createReviewValidation,
-    updateReviewValidation
+    updateReviewValidation,
+    ssoRegistrationValidation
 }
