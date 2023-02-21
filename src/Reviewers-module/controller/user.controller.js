@@ -3,6 +3,7 @@ const review = require("../models/review.models");
 const { userRegistrationValidation } = require("../services/Validation-handler");
 const { statusCodes } = require("../services/statusCodes");
 const { v4: uuidv4 } = require('uuid');
+const { jwtGenerate } = require('../services/user.services');
 
 
 const registerUserWithEmail = async (req, res) => {
@@ -26,7 +27,11 @@ const registerUserWithEmail = async (req, res) => {
                     throw new Error('invalid code');
                 }
                 const userData = await user.create(data);
-                return res.status(statusCodes[201].value).send({ data: userData });
+                let payload = { userId: userData.uId };
+                const token = jwtGenerate(payload, "secret", {
+                    expiresIn: "24H",
+                });
+                return res.status(statusCodes[201].value).send({ data: userData, token: token });
             })
             .catch(async (err) => {
                 console.error(err);
@@ -47,7 +52,66 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const ssoRegister = async (req, res) => {
+    try {
+        let identify = req.query.key;
+        if (identify.toLowerCase() === 'google') {
+            let { name, picture, email, email_verified } = req.body;
+            if (email_verified) {
+                const saveUserData = new Promise(async (resolve, reject) => {
+                    const findUser = await user.findOne({ email: email });
+                    const error = findUser !== null ? true : false;
+                    if (error) {
+                        reject(new Error("User Exist with this email"));
+                    } else {
+                        resolve(await user.create({ name: name, email: email, profilePicture: picture }));
+                    }
+                });
+                saveUserData
+                    .then((data) => {
+                        let payload = { userId: data.uId };
+                        const token = jwtGenerate(payload, "secret", {
+                            expiresIn: "24H",
+                        });
+                        return res.status(statusCodes[201].value).send({ data: data, token: token })
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        return res.status(statusCodes[400].value).send({ msg: err.message });
+                    })
+            }
+        }
+        if (identify.toLowerCase() === 'facebook') {
+            let { name, picture, email } = req.body;
+            const saveUserData = new Promise(async (resolve, reject) => {
+                const findUser = await user.findOne({ email: email });
+                const error = findUser !== null ? true : false;
+                if (error) {
+                    reject(new Error("User Exist with this email"));
+                } else {
+                    resolve(await user.create({ name: name, email: email, profilePicture: picture.data.url }));
+                }
+            });
+            saveUserData.then((data) => {
+                let payload = { userId: data.uId };
+                const token = jwtGenerate(payload, "secret", {
+                    expiresIn: "24H",
+                });
+                return res.status(statusCodes[201].value).send({ data: data, token: token })
+            })
+                .catch((err) => {
+                    console.error(err);
+                    return res.status(statusCodes[400].value).send({ msg: err.message });
+                })
+        }
+    } catch (error) {
+        console.error(error)
+        return res.status(statusCodes[500].value).send({ msg: error.message });
+    }
+}
+
 module.exports = {
     registerUserWithEmail,
-    getAllUsers
+    getAllUsers,
+    ssoRegister
 }
