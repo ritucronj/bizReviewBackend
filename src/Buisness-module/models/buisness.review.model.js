@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const reviews = new mongoose.Schema({
     uId: {
-        type: String,
+        type: String
     },
-    reviewedBuisnessId: {
+    reviewedBy: {
         type: String
     },
     title: {
@@ -18,26 +18,28 @@ const reviews = new mongoose.Schema({
     },
     dateOfExperience: {
         type: String,
-    },
-    status: {
-        type: String,
-        default: "Pending"
-    },
-    isDeleted: {
-        type: Boolean,
-        default: false
     }
 }, { timestamps: true });
 
-
-const userReviewSchema = new mongoose.Schema({
-    createdBy: {
-        type: String,
-        required: true
+const buisnessReview = new mongoose.Schema({
+    uId: {
+        type: String
+    },
+    buisnessId: {
+        type: String
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    totalReviews: {
+        type: Number,
+        default: 0
     },
     reviews: {
         type: [reviews]
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model("review", userReviewSchema);
+
+module.exports = mongoose.model("buisnessReview", buisnessReview)

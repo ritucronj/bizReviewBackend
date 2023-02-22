@@ -20,9 +20,9 @@ const ssoRegistrationValidation = (data) => {
 
 const createReviewValidation = (data) => {
   const schema = joi.object({
-    reviewedCompany: joi.string(),
+    reviewedBuisnessId: joi.string(),
     title: joi.string().required(),
-    rating: joi.string().min(1).required(),
+    rating: joi.number().required(),
     description: joi.string().required(),
     dateOfExperience: joi.string().required(),
   });
