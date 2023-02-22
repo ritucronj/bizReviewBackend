@@ -40,6 +40,10 @@ const businessSchema = new mongoose.Schema(
     logo: {
       type: String,
     },
+    isEmailVerfied: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
