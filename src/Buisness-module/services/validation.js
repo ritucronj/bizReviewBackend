@@ -12,6 +12,7 @@ const createBusinessValidation = (data) => {
     email: joi.string().email(),
     mobile: joi.string(),
     password: joi.string().alphanum(),
+    location:joi.string()
   });
   return schema.validate(data);
 };
