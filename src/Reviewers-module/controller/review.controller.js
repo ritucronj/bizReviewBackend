@@ -1,4 +1,6 @@
 const review = require('../models/review.models');
+const buisnessReview = require('../../Buisness-module/models/buisness.review.model');
+const buisness = require("../../Buisness-module/models/business.model");
 const { statusCodes } = require('../services/statusCodes');
 const { createReviewValidation, updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require('uuid');
@@ -7,13 +9,14 @@ const { v4: uuidv4 } = require('uuid');
 const createCompanyReview = async (req, res) => {
     try {
         let body = req.body;
-        let Id = req.params.Id;
+        let userId = req.params.Id;
+        let { reviewedBuisnessId } = req.body;
         const { error } = createReviewValidation(body);
         if (error) return res.status(statusCodes[400].value).send({ msg: error.details[0].message });
         body.uId = uuidv4();
         const checkReview = new Promise(async (resolve, reject) => {
             const findAndInsertReview = await review.findOneAndUpdate(
-                { createdBy: Id },
+                { createdBy: userId },
                 { $push: { reviews: body } },
                 { new: true }
             );
@@ -21,12 +24,37 @@ const createCompanyReview = async (req, res) => {
             if (error) reject(new Error("No Reviews Found by User"));
             resolve(findAndInsertReview);
         });
+        const insertForBuisness = new Promise(async (resolve, reject) => {
+            body.reviewedBy = userId;
+            body.uId = uuidv4();
+            const findBuinessAndInsert = await buisnessReview.findOneAndUpdate(
+                { buisnessId: reviewedBuisnessId },
+                { $push: { reviews: body } },
+                { new: true }
+            );
+            const error = findBuinessAndInsert === null ? true : false;
+            if (error) reject(new Error(`no Buisness found with Id ${reviewedBuisnessId}`));
+            resolve(findBuinessAndInsert);
+        });
+        insertForBuisness
+            .then(async (val) => {
+                await buisnessReview.updateOne(
+                    { buisnessId: reviewedBuisnessId },
+                    [
+                        { $set: { totalReviews: { $size: "$reviews" } } },
+                        { $set: { averageRating: { $trunc: [{ $avg: "$reviews.rating" }] } } }
+                    ]
+                );
+            })
+            .catch((err) => {
+                return res.status(statusCodes[400].value).send({ msg: err.message });
+            })
         checkReview
             .then((value) => {
                 return res.status(statusCodes[200].value).send({ data: value });
             }).catch(async (err) => {
                 console.error(err);
-                const createReview = await review.create({ createdBy: Id, reviews: [body] });
+                const createReview = await review.create({ createdBy: userId, reviews: [body] });
                 return res.status(statusCodes[201].value).send({ data: createReview });
             });
     } catch (error) {
@@ -105,6 +133,55 @@ const readAllReviewsByUser = async (req, res) => {
             });
     } catch (error) {
         console.log(error);
+        return res.status(statusCodes[500].value).send({ status: statusCodes[500].message, msg: error.message });
+    }
+};
+
+const recentReviews = async (req, res) => {
+    try {
+        let userId = req.params.Id;
+        const checkRecentReviews = new Promise(async (resolve, reject) => {
+            const getRecentReviews = await review.aggregate([
+                {
+                    "$match": {
+                        createdBy: userId
+                    }
+                },
+                {
+                    "$project": {
+                        "reviews": {
+                            "$filter": {
+                                input: "$reviews",
+                                as: "review",
+                                cond: { $eq: ["$$review.isDeleted", false] }
+                            }
+                        }
+                    }
+                },
+                {
+                    $unwind: "$reviews"
+                },
+                {
+                    "$sort": {
+                        "reviews.createdAt": -1
+                    }
+                },
+                // {
+                //     "$limit": 2
+                // }
+            ]);
+            const error = getRecentReviews.length == 0 ? true : false;
+            if (error) reject(new Error("No Documents Found"));
+            resolve(getRecentReviews);
+        })
+        checkRecentReviews
+            .then((result) => {
+                return res.status(statusCodes[200].value).send({ data: result });
+            })
+            .catch((err) => {
+                return res.status(statusCodes[400].value).send({ msg: err.message });
+            })
+    } catch (error) {
         return res.status(statusCodes[500].value).send({ status: statusCodes[500].message, msg: error.message });
     }
 }
@@ -202,6 +279,7 @@ module.exports = {
     createCompanyReview,
     readReviewById,
     readAllReviewsByUser,
+    recentReviews,
     updateCompanyReview,
     deleteReviewById
 }

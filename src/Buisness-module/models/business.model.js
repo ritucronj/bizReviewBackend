@@ -40,6 +40,9 @@ const businessSchema = new mongoose.Schema(
     logo: {
       type: String,
     },
+    location:{
+      type:String
+    }
   },
   { timestamps: true }
 );

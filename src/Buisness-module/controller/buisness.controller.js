@@ -1,4 +1,5 @@
 const Business = require("../models/business.model");
+const buisnessReview = require("../models/buisness.review.model");
 const {
   createBusinessValidation,
   hashPassword,
@@ -23,6 +24,7 @@ const createBusiness = async (req, res) => {
       req.body.password = await hashPassword(req.body.password);
     }
     const createData = await Business.create(req.body);
+    await buisnessReview.create({ uId: uuidv4(), buisnessId: createData.uId });
     return res.send({ createData });
   } catch (error) {
     return res.status(500).send({ messgae: `Internal Server Error` });
