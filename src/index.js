@@ -18,6 +18,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/users/reviews", reviewRoutes);
 app.use("/api", businessRoutes);
 app.use("/api/search", search);
+app.use("/api", otpRoutes);
 
 mongoose
   .connect(process.env.DB_CONNECTION, { useNewUrlParser: true })
