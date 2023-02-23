@@ -10,6 +10,8 @@ const reviewRoutes = require("./Reviewers-module/routes/review.routes");
 const businessRoutes = require("./Buisness-module/routes/buisness.routes");
 const otpRoutes = require("./utils/Otp");
 const search = require("./search-module/routes/search.routes");
+const adminRoutes = require("./admin-module/routes/admin.routes");
+const dashboardRoutes = require("./admin-module/routes/dashboard.routes");
 
 app.use(express.json());
 app.use(cors());
@@ -18,6 +20,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/users/reviews", reviewRoutes);
 app.use("/api", businessRoutes);
 app.use("/api/search", search);
+app.use("/api/admin", adminRoutes,dashboardRoutes);
 app.use("/api", otpRoutes);
 
 mongoose

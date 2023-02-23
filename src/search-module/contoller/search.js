@@ -5,8 +5,7 @@ const searchBuisness = async (req, res) => {
     try {
         const { companyName, website, page = 1, limit = 10 } = req.query;
         const queryFilter = {};
-        queryFilter.isDeleted = false;
-
+        // queryFilter.isDeleted = false;
         if (companyName) {
             queryFilter.companyName = { $regex: companyName, $options: "i" };
         }
@@ -16,7 +15,8 @@ const searchBuisness = async (req, res) => {
         let result = await buisness
             .find(queryFilter)
             .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .skip((page - 1) * limit)
+            .select({ companyName: 1, website: 1, logo: 1, location: 1, _id: 0, uId: 1 });
         if (result.length === 0) return res.status(statusCodes[404].value).send({ msg: statusCodes[404].message });
         res.send(result);
     } catch (error) {

@@ -22,6 +22,14 @@ const user = new mongoose.Schema({
     language: {
         type: String,
         // required: true
+    },
+    userType: {
+        type: String,
+        default: "reviewer"
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 
