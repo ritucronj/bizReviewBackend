@@ -6,7 +6,8 @@ const adminRegistrationValidation = (data) => {
         email: joi.string().required().email(),
         password: joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, "password").required(),
         confirmPassword: joi.string().required().valid(joi.ref('password')),
-        role: joi.string()
+        role: joi.string(),
+        picture: joi.string()
     });
     return schema.validate(data);
 };

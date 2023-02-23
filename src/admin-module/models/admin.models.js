@@ -4,6 +4,9 @@ const admin = new mongoose.Schema({
     uId: {
         type: String
     },
+    picture: {
+        type: String
+    },
     name: {
         type: String
     },
