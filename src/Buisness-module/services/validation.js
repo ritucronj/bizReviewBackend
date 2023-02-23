@@ -12,7 +12,22 @@ const createBusinessValidation = (data) => {
     email: joi.string().email(),
     mobile: joi.string(),
     password: joi.string().alphanum(),
-    location:joi.string()
+    location: joi.string(),
+  });
+  return schema.validate(data);
+};
+
+const updateBusinessValidation = (data) => {
+  const schema = joi.object({
+    name: joi.string(),
+    country: joi.string(),
+    language: joi.string(),
+    address: joi.string(),
+    zipCode: joi.string(),
+    description: joi.string(),
+    companyName: joi.string(),
+    website: joi.string(),
+    password: joi.string().alphanum(),
   });
   return schema.validate(data);
 };
@@ -30,5 +45,6 @@ async function hashPassword(password) {
 
 module.exports = {
   createBusinessValidation,
+  updateBusinessValidation,
   hashPassword,
 };
