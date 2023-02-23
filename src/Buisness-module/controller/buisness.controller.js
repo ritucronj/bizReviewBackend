@@ -3,6 +3,7 @@ const { createBusinessValidation } = require("../services/validation");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { hashPassword } = require("../services/validation");
 const { sendVerifyEMail } = require("../../utils/SendMail");
 require("dotenv").config();
 
@@ -37,8 +38,24 @@ const verifyEmail = async (req, res) => {
       { $set: { isEmailVerfied: true } },
       { new: true }
     );
-    return res.send({ msg: `Email verified.`, data: updateFlag });
+    return res.send({ msg: `Email verified.` });
   } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+const setBusinessPassword = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { password } = req.body;
+    const securePass = await hashPassword(password);
+    const setPass = await Business.findOneAndUpdate(
+      { uId: id },
+      { password: securePass }
+    );
+    return res.send({ message: `Password added successfully.` });
+  } catch (error) {
+    console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
   }
 };
@@ -62,8 +79,23 @@ const loginBusiness = async (req, res) => {
   }
 };
 
+const getBusiness = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await Business.findOne({ id });
+    if (!userData) {
+      return res.status(404).send({ message: `User not found.` });
+    }
+    return res.send({ userData });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
   verifyEmail,
+  setBusinessPassword,
+  getBusiness,
 };
