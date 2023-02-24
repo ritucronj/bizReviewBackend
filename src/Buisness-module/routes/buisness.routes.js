@@ -8,6 +8,7 @@ const {
   getBusiness,
   updateBusinessProfile,
   deleteBusiness,
+  searchReviews,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -24,5 +25,7 @@ router.get("/business/:id", getBusiness);
 router.put("/business/:id", updateBusinessProfile);
 
 router.delete("/business/:id", deleteBusiness);
+
+router.get("/review-search", searchReviews);
 
 module.exports = router;
