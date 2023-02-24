@@ -9,6 +9,7 @@ const {
   ssoSignBuisness,
   updateBusinessProfile,
   deleteBusiness,
+  searchReviews,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -26,5 +27,7 @@ router.post('/business/google', ssoSignBuisness);
 router.put("/business/:id", updateBusinessProfile);
 
 router.delete("/business/:id", deleteBusiness);
+
+router.get("/review-search", searchReviews);
 
 module.exports = router;

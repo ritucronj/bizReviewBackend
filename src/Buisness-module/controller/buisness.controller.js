@@ -1,4 +1,7 @@
 const Business = require("../models/business.model");
+const Review = require("../../Reviewers-module/models/review.models");
+const User = require("../../Reviewers-module/models/user.models");
+const BusinessReviews = require("../../Buisness-module/models/buisness.review.model");
 const {
   createBusinessValidation,
   updateBusinessValidation,
@@ -167,6 +170,54 @@ const deleteBusiness = async (req, res) => {
   }
 };
 
+const searchReviews = async (req, res) => {
+  try {
+    const { name, email, rating, startDate, endDate } = req.query;
+    const filter = {};
+    if (name) {
+      filter.name = new RegExp(name, "i");
+    }
+
+    if (email) {
+      filter.email = new RegExp(email, "i");
+    }
+
+    if (rating) {
+      filter.rating = parseInt(rating);
+    }
+
+    if (startDate && endDate) {
+      filter.createdAt = { $gte: new Date(startDate), $lt: new Date(endDate) };
+    }
+    if (rating || startDate || endDate) {
+      const findReview = await Review.find(filter);
+      return res.send(findReview);
+    }
+    if (name) {
+      const findUser = await User.findOne(filter);
+      const reviewFilter = { createdBy: findUser.uId };
+      const findReviews = await Review.find(reviewFilter);
+      if (findReviews.length === 0) {
+        return res.status(404).send({ message: `Reviews not found` });
+      }
+      return res.send(findReviews);
+    }
+    if (email) {
+      const findUser = await User.findOne(filter);
+      const reviewFilter = { email: findUser.email };
+      const findReviews = await Review.find(reviewFilter);
+      if (findReviews.length === 0) {
+        return res.status(404).send({ message: `Reviews not found` });
+      }
+      return res.send(findReviews);
+    }
+    return res.status(404).send({ message: `No matching results found` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -176,4 +227,5 @@ module.exports = {
   ssoSignBuisness,
   updateBusinessProfile,
   deleteBusiness,
+  searchReviews,
 };
