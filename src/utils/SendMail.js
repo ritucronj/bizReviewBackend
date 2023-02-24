@@ -24,7 +24,7 @@ const sendVerifyEMail = async (name, email, uId) => {
       html:
         "<p> Hi " +
         name +
-        ', <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="http://localhost:3000/createPassword' +
+        ', <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="http://localhost:3000/createPassword?id=' +
         uId +
         '"> Verification Link</a> <br> <br> The BizReview Team',
     };
@@ -36,7 +36,7 @@ const sendVerifyEMail = async (name, email, uId) => {
         console.log(`Mail has been sent.`, info.response);
       }
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 module.exports = {
