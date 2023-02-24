@@ -6,6 +6,7 @@ const {
   verifyEmail,
   setBusinessPassword,
   getBusiness,
+  ssoSignBuisness,
   updateBusinessProfile,
   deleteBusiness,
   searchReviews,
@@ -22,6 +23,7 @@ router.post("/business/login", loginBusiness);
 
 router.get("/business/:id", getBusiness);
 
+router.post('/business/google', ssoSignBuisness);
 router.put("/business/:id", updateBusinessProfile);
 
 router.delete("/business/:id", deleteBusiness);
