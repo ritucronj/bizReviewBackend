@@ -1,4 +1,5 @@
 const express = require("express");
+const authenticate = require("../../utils/auth.middleware");
 const {
   createBusiness,
   loginBusiness,
@@ -6,6 +7,8 @@ const {
   setBusinessPassword,
   getBusiness,
   ssoSignBuisness,
+  updateBusinessProfile,
+  deleteBusiness,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -20,5 +23,8 @@ router.post("/business/login", loginBusiness);
 router.get("/business/:id", getBusiness);
 
 router.post('/business/google', ssoSignBuisness);
+router.put("/business/:id", updateBusinessProfile);
+
+router.delete("/business/:id", deleteBusiness);
 
 module.exports = router;

@@ -1,5 +1,8 @@
 const Business = require("../models/business.model");
-const { createBusinessValidation } = require("../services/validation");
+const {
+  createBusinessValidation,
+  updateBusinessValidation,
+} = require("../services/validation");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -130,11 +133,47 @@ const getBusiness = async (req, res) => {
   }
 };
 
+const updateBusinessProfile = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { error } = updateBusinessValidation(req.body);
+    if (error) {
+      return res.status(400).send({ message: error.details[0].message });
+    }
+    if (req.body.password) {
+      req.body.password = await hashPassword(req.body.password);
+    }
+    const updateData = await Business.findOneAndUpdate({ uId: id }, req.body, {
+      new: true,
+    });
+    return res.send({ message: `Profile updated successfully.` });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+const deleteBusiness = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deleteProfile = await Business.findOneAndUpdate(
+      { uId: id },
+      { $set: { isDeleted: true } },
+      { new: true }
+    );
+    return res.send({ message: `Account deleted successfully.` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
   verifyEmail,
   setBusinessPassword,
   getBusiness,
-  ssoSignBuisness
+  ssoSignBuisness,
+  updateBusinessProfile,
+  deleteBusiness,
 };
