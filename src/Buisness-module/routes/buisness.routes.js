@@ -5,6 +5,7 @@ const {
   verifyEmail,
   setBusinessPassword,
   getBusiness,
+  ssoSignBuisness,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -17,5 +18,7 @@ router.put("/setpassword/:id", setBusinessPassword);
 router.post("/business/login", loginBusiness);
 
 router.get("/business/:id", getBusiness);
+
+router.post('/business/google', ssoSignBuisness);
 
 module.exports = router;

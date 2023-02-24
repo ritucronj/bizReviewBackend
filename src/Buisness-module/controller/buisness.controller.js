@@ -5,7 +5,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { hashPassword } = require("../services/validation");
 const { sendVerifyEMail } = require("../../utils/SendMail");
+const { statusCodes } = require("../../utils/statusCodes");
+const { jwtGenerate } = require("../../utils/util.function");
 require("dotenv").config();
+
 
 const createBusiness = async (req, res) => {
   try {
@@ -25,6 +28,41 @@ const createBusiness = async (req, res) => {
     return res.status(500).send({ messgae: `Internal Server Error` });
   }
 };
+
+const ssoSignBuisness = async (req, res) => {
+  try {
+    let identify = req.query.key;
+    if (identify.toLowerCase() === 'google') {
+      let { given_name, family_name, picture, email, email_verified, hd } = req.body;
+      if (email_verified) {
+        const saveUserData = new Promise(async (resolve, reject) => {
+          const findUser = await Business.findOne({ email: email });
+          const registeredUser = findUser !== null ? true : false;
+          if (registeredUser) {
+            reject([findUser, jwtGenerate({ userId: findUser.uId }, "secret", { expiresIn: "24H" })]);
+          } else {
+            resolve(await Business.create({ companyName: hd, firstName: given_name, lastName: family_name, email: email, logo: picture }));
+          }
+        });
+        saveUserData
+          .then((data) => {
+            let payload = { userId: data.uId };
+            const token = jwtGenerate(payload, "secret", {
+              expiresIn: "24H",
+            });
+            return res.status(statusCodes[201].value).send({ data: data, token: token })
+          })
+          .catch((dataArr) => {
+            return res.status(statusCodes[200].value).send({ data: dataArr[0], token: dataArr[1] });
+          })
+      } else {
+        return res.status(statusCodes[400].value).send({ msg: "invalid request" });
+      }
+    }
+  } catch (error) {
+    return res.status(statusCodes[500].value).send({ msg: error.message });
+  }
+}
 
 const verifyEmail = async (req, res) => {
   try {
@@ -98,4 +136,5 @@ module.exports = {
   verifyEmail,
   setBusinessPassword,
   getBusiness,
+  ssoSignBuisness
 };

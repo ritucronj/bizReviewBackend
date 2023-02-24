@@ -24,7 +24,7 @@ const sendVerifyEMail = async (name, email, uId) => {
       html:
         "<p> Hi " +
         name +
-        ', <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="http://localhost:3000/api/verify-email?id=' +
+        ', <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="http://localhost:3000/createPassword' +
         uId +
         '"> Verification Link</a> <br> <br> The BizReview Team',
     };
