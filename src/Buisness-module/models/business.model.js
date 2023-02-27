@@ -80,6 +80,10 @@ const businessSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    userType: {
+      type: String,
+      default: "buisness",
+    },
   },
   { timestamps: true }
 );
