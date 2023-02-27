@@ -10,11 +10,15 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { hashPassword } = require("../services/validation");
-const { sendVerifyEMail } = require("../../utils/SendMail");
+const {
+  sendVerifyEMail,
+  sendResetPasswordMail,
+  sendResetSuccessMail,
+} = require("../../utils/SendMail");
 const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
+const randomstring = require("randomstring");
 require("dotenv").config();
-
 
 const createBusiness = async (req, res) => {
   try {
@@ -38,16 +42,30 @@ const createBusiness = async (req, res) => {
 const ssoSignBuisness = async (req, res) => {
   try {
     let identify = req.query.key;
-    if (identify.toLowerCase() === 'google') {
-      let { given_name, family_name, picture, email, email_verified, hd } = req.body;
+    if (identify.toLowerCase() === "google") {
+      let { given_name, family_name, picture, email, email_verified, hd } =
+        req.body;
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
-            reject([findUser, jwtGenerate({ userId: findUser.uId }, "secret", { expiresIn: "24H" })]);
+            reject([
+              findUser,
+              jwtGenerate({ userId: findUser.uId }, "secret", {
+                expiresIn: "24H",
+              }),
+            ]);
           } else {
-            resolve(await Business.create({ companyName: hd, firstName: given_name, lastName: family_name, email: email, logo: picture }));
+            resolve(
+              await Business.create({
+                companyName: hd,
+                firstName: given_name,
+                lastName: family_name,
+                email: email,
+                logo: picture,
+              })
+            );
           }
         });
         saveUserData
@@ -56,19 +74,25 @@ const ssoSignBuisness = async (req, res) => {
             const token = jwtGenerate(payload, "secret", {
               expiresIn: "24H",
             });
-            return res.status(statusCodes[201].value).send({ data: data, token: token })
+            return res
+              .status(statusCodes[201].value)
+              .send({ data: data, token: token });
           })
           .catch((dataArr) => {
-            return res.status(statusCodes[200].value).send({ data: dataArr[0], token: dataArr[1] });
-          })
+            return res
+              .status(statusCodes[200].value)
+              .send({ data: dataArr[0], token: dataArr[1] });
+          });
       } else {
-        return res.status(statusCodes[400].value).send({ msg: "invalid request" });
+        return res
+          .status(statusCodes[400].value)
+          .send({ msg: "invalid request" });
       }
     }
   } catch (error) {
     return res.status(statusCodes[500].value).send({ msg: error.message });
   }
-}
+};
 
 const verifyEmail = async (req, res) => {
   try {
@@ -218,6 +242,47 @@ const searchReviews = async (req, res) => {
   }
 };
 
+const forgotPass = async (req, res) => {
+  try {
+    const email = req.body.email;
+    const userData = await Business.findOne({ email: email });
+    if (userData) {
+      const randomString = randomstring.generate();
+      const data = await Business.updateOne(
+        { email: email },
+        { $set: { token: randomString } }
+      );
+      sendResetPasswordMail(userData.firstName, userData.email, randomString);
+      return res.send(`Mail sent. Please check your inbox.`);
+    }
+    if (!userData) return res.status(400).send({ msg: `User doesn't exist` });
+  } catch (error) {
+    return res.status(500).send({ msg: `Internal Server Error` });
+  }
+};
+
+const resetPass = async (req, res) => {
+  try {
+    const token = req.query.token;
+    const tokenData = await Business.findOne({ token: token });
+    if (tokenData) {
+      const password = req.body.password;
+      const newPassword = await hashPassword(password);
+      const userData = await Business.findByIdAndUpdate(
+        { _id: tokenData._id },
+        { $set: { password: newPassword, token: "" } },
+        { new: true }
+      );
+      sendResetSuccessMail(tokenData.firstName, tokenData.email);
+      return res.send({ msg: `Password has been reset.`, data: userData });
+    }
+    if (!tokenDataInvestor || tokenDataStartup)
+      return res.status(400).send({ msg: `Token invalid/expired.` });
+  } catch (error) {
+    return res.status(500).send({ msg: `Internal Server Error` });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -228,4 +293,6 @@ module.exports = {
   updateBusinessProfile,
   deleteBusiness,
   searchReviews,
+  forgotPass,
+  resetPass,
 };

@@ -12,6 +12,7 @@ const otpRoutes = require("./utils/Otp");
 const search = require("./search-module/routes/search.routes");
 const adminRoutes = require("./admin-module/routes/admin.routes");
 const dashboardRoutes = require("./admin-module/routes/dashboard.routes");
+const paypalRoutes = require("../src/Buisness-module/paypal");
 
 app.use(express.json());
 app.use(cors());
@@ -20,8 +21,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/users/reviews", reviewRoutes);
 app.use("/api", businessRoutes);
 app.use("/api/search", search);
-app.use("/api/admin", adminRoutes,dashboardRoutes);
+app.use("/api/admin", adminRoutes, dashboardRoutes);
 app.use("/api", otpRoutes);
+app.use("/", paypalRoutes);
 
 mongoose
   .connect(process.env.DB_CONNECTION, { useNewUrlParser: true })
