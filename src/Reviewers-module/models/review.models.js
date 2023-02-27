@@ -35,6 +35,10 @@ const userReviewSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    isUserActive: {
+        type: Boolean,
+        default: true
+    },
     reviews: {
         type: [reviews]
     }

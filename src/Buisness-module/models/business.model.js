@@ -76,6 +76,10 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    userType: {
+      type: String,
+      default: "buisness"
+    }
   },
   { timestamps: true }
 );
