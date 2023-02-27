@@ -76,10 +76,14 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    token: {
+      type: String,
+      default: "",
+    },
     userType: {
       type: String,
-      default: "buisness"
-    }
+      default: "buisness",
+    },
   },
   { timestamps: true }
 );
