@@ -1,4 +1,5 @@
 const review = require('../models/review.models');
+const user = require("../models/user.models");
 const buisnessReview = require('../../Buisness-module/models/buisness.review.model');
 const buisness = require("../../Buisness-module/models/business.model");
 const { statusCodes } = require('../services/statusCodes');
@@ -24,33 +25,33 @@ const createCompanyReview = async (req, res) => {
             if (error) reject(new Error("No Reviews Found by User"));
             resolve(findAndInsertReview);
         });
-        const insertForBuisness = new Promise(async (resolve, reject) => {
-            body.reviewedBy = userId;
-            body.uId = uuidv4();
-            const findBuinessAndInsert = await buisnessReview.findOneAndUpdate(
-                { buisnessId: reviewedBuisnessId },
-                { $push: { reviews: body } },
-                { new: true }
-            );
-            const error = findBuinessAndInsert === null ? true : false;
-            if (error) reject(new Error(`no Buisness found with Id ${reviewedBuisnessId}`));
-            resolve(findBuinessAndInsert);
-        });
-        insertForBuisness
-            .then(async (val) => {
-                await buisnessReview.updateOne(
-                    { buisnessId: reviewedBuisnessId },
-                    [
-                        { $set: { totalReviews: { $size: "$reviews" } } },
-                        { $set: { averageRating: { $trunc: [{ $avg: "$reviews.rating" }] } } }
-                    ]
-                );
-            })
-            .catch((err) => {
-                return res.status(statusCodes[400].value).send({ msg: err.message });
-            })
         checkReview
             .then((value) => {
+                const insertForBuisness = new Promise(async (resolve, reject) => {
+                    body.reviewedBy = userId;
+                    body.uId = uuidv4();
+                    const findBuinessAndInsert = await buisnessReview.findOneAndUpdate(
+                        { buisnessId: reviewedBuisnessId },
+                        { $push: { reviews: body } },
+                        { new: true }
+                    );
+                    const error = findBuinessAndInsert === null ? true : false;
+                    if (error) reject(new Error(`no Buisness found with Id ${reviewedBuisnessId}`));
+                    resolve(findBuinessAndInsert);
+                });
+                insertForBuisness
+                    .then(async (val) => {
+                        await buisnessReview.updateOne(
+                            { buisnessId: reviewedBuisnessId },
+                            [
+                                { $set: { totalReviews: { $size: "$reviews" } } },
+                                { $set: { averageRating: { $trunc: [{ $avg: "$reviews.rating" }] } } }
+                            ]
+                        );
+                    })
+                    .catch((err) => {
+                        return res.status(statusCodes[400].value).send({ msg: err.message });
+                    })
                 return res.status(statusCodes[200].value).send({ data: value });
             }).catch(async (err) => {
                 console.error(err);
@@ -104,7 +105,7 @@ const readAllReviewsByUser = async (req, res) => {
             const findReview = await review.aggregate([
                 {
                     "$match": {
-                        createdBy: userId
+                        $and: [{ createdBy: userId }, { isUserActive: true }]
                     }
                 },
                 {
@@ -144,7 +145,7 @@ const recentReviews = async (req, res) => {
             const getRecentReviews = await review.aggregate([
                 {
                     "$match": {
-                        createdBy: userId
+                        $and: [{ createdBy: userId }, { isUserActive: true }]
                     }
                 },
                 {
@@ -269,9 +270,57 @@ const deleteReviewById = async (req, res) => {
     } catch (error) {
         return res.status(statusCodes[500].value).send({ status: statusCodes[500].message, msg: error.message });
     }
-}
+};
 
+const recentReviewsPublic = async (req, res) => {
+    try {
+        const findUsers = await user.find();
+        const resultArr = [];
+        for (let i = 0; i < findUsers.length; i++) {
+            const reviews = await review.aggregate([
+                {
+                    "$match": {
+                        createdBy: findUsers[i].uId
+                    }
+                },
+                {
+                    "$project": {
+                        "reviews": {
+                            "$filter": {
+                                input: "$reviews",
+                                as: "review",
+                                cond: { $eq: ["$$review.isDeleted", false] }
+                            }
+                        }
+                    }
+                },
 
+                {
+                    $unwind: "$reviews"
+                },
+                {
+                    "$sort": {
+                        "reviews.createdAt": -1
+                    }
+                },
+                {
+                    "$addFields": {
+                        userDetails: findUsers[i]
+                    }
+                },
+            ]);
+            // console.log(reviews);
+            if (reviews.length === 0) {
+                continue;
+            } else {
+                resultArr.push(reviews[0]);
+            }
+        }
+        return res.status(statusCodes[200].value).send({ data: resultArr });
+    } catch (error) {
+        return res.status(statusCodes[500].value).send({ status: statusCodes[500].message, msg: error.message });
+    }
+};
 
 
 
@@ -281,5 +330,6 @@ module.exports = {
     readAllReviewsByUser,
     recentReviews,
     updateCompanyReview,
-    deleteReviewById
+    deleteReviewById,
+    recentReviewsPublic
 }

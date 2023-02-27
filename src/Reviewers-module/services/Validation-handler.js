@@ -8,6 +8,17 @@ const userRegistrationValidation = (data) => {
   return schema.validate(data);
 };
 
+const userUpdateValidataion = (data) => {
+  const schema = joi.object({
+    email: joi.string().email(),
+    name: joi.string(),
+    country: joi.string(),
+    language: joi.string(),
+    profilePicture: joi.string()
+  });
+  return schema.validate(data);
+}
+
 const ssoRegistrationValidation = (data) => {
   const schema = joi.object({
     email: joi.string().email().required(),
@@ -44,4 +55,5 @@ module.exports = {
   createReviewValidation,
   updateReviewValidation,
   ssoRegistrationValidation,
+  userUpdateValidataion
 };

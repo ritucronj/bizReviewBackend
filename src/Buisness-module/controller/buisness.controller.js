@@ -3,6 +3,7 @@ const {
   createBusinessValidation,
   updateBusinessValidation,
 } = require("../services/validation");
+const businessReview = require("../models/buisness.review.model");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -26,6 +27,7 @@ const createBusiness = async (req, res) => {
     req.body.uId = uuidv4();
     const createData = await Business.create(req.body);
     sendVerifyEMail(createData.firstName, createData.email, createData.uId);
+    await businessReview.create({ buisnessId: createData.uId });
     return res.send({ createData });
   } catch (error) {
     return res.status(500).send({ messgae: `Internal Server Error` });
@@ -113,7 +115,7 @@ const loginBusiness = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = jwt.sign({ _id: userData._id }, process.env.JWT_SECRET);
-    return res.json({ token });
+    return res.json({ token: token, data: userData });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
