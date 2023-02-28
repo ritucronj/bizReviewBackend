@@ -278,7 +278,7 @@ const resetPass = async (req, res) => {
       sendResetSuccessMail(tokenData.firstName, tokenData.email);
       return res.send({ msg: `Password has been reset.`, data: userData });
     }
-    if (!tokenDataInvestor || tokenDataStartup)
+    if (!tokenData)
       return res.status(400).send({ msg: `Token invalid/expired.` });
   } catch (error) {
     return res.status(500).send({ msg: `Internal Server Error` });
