@@ -21,12 +21,8 @@ const sendVerifyEMail = async (name, email, uId) => {
       },
       to: email,
       subject: `Verify your account`,
-      html:
-        "<p> Hi " +
-        name +
-        ', <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="http://localhost:3000/createPassword?id=' +
-        uId +
-        '"> Verification Link</a> <br> <br> The BizReview Team',
+      html: `<p> Hi  ${name}
+        , <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="${process.env.SERVER_ADDR}/createPassword?id=${uId}"> Verification Link</a> <br> <br> The BizReview Team`,
     };
 
     transport.sendMail(mailOptions, function (error, info) {
@@ -59,12 +55,8 @@ const sendResetPasswordMail = async (name, email, token) => {
       },
       to: email,
       subject: `${name}, here's your password reset link`,
-      html:
-        "<p> Hi " +
-        name +
-        ', <br><br>  We received a request to reset the password on your BizReview account.<br> <br> <a href="http://localhost:3000/api/reset-password?token=' +
-        token +
-        '"> Password reset link</a> <br> <br> Click on this link to complete the reset password. After you click the link above, you&#39;ll be prompted to complete the following steps:<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. Enter new password.<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  2. Confirm your new password. <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  3. Hit Submit. <br> <br> <strong> This link is valid for one use only. It will expire in 2 hours. </strong>  <br> <br>  If you didn’t request this password rest or you received this message in error, please disregard this email.<br> <br> The BizReview Team',
+      html: `<p> Hi ${name}
+        , <br><br>  We received a request to reset the password on your BizReview account.<br> <br> <a href=" href="${process.env.SERVER_ADDR}/createPassword?token=${token}"> Password reset link</a> <br> <br> Click on this link to complete the reset password. After you click the link above, you&#39;ll be prompted to complete the following steps:<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. Enter new password.<br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  2. Confirm your new password. <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  3. Hit Submit. <br> <br> <strong> This link is valid for one use only. It will expire in 2 hours. </strong>  <br> <br>  If you didn’t request this password rest or you received this message in error, please disregard this email.<br> <br> The BizReview Team`,
     };
 
     transport.sendMail(mailOptions, function (error, info) {
