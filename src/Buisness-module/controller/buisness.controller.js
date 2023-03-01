@@ -27,7 +27,7 @@ const createBusiness = async (req, res) => {
     if (error) {
       return res.status(400).send({ message: error.details[0].message });
     }
-    const alreadyExists = await Business.findOne({ mobile: req.body.mobile });
+    const alreadyExists = await Business.findOne({ email: req.body.email });
     if (alreadyExists !== null) {
       return res.status(400).send({ messgae: `Account already registered` });
     }
