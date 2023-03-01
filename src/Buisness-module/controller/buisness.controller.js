@@ -172,9 +172,13 @@ const updateBusinessProfile = async (req, res) => {
     if (req.body.password) {
       req.body.password = await hashPassword(req.body.password);
     }
-    const updateData = await Business.findOneAndUpdate({ uId: id }, req.body, {
-      new: true,
-    });
+    const updateData = await Business.findOneAndUpdate(
+      { uId: id },
+      { $set: req.body },
+      {
+        new: true,
+      }
+    );
     return res.send({ message: `Profile updated successfully.` });
   } catch (error) {
     return res.status(500).send({ messgae: `Internal Server Error` });

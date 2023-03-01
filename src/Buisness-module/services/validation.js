@@ -20,10 +20,13 @@ const createBusinessValidation = (data) => {
 const updateBusinessValidation = (data) => {
   const schema = joi.object({
     name: joi.string(),
+    firstName: joi.string(),
+    lastName: joi.string(),
     country: joi.string(),
     language: joi.string(),
     address: joi.string(),
     zipCode: joi.string(),
+    mobile: joi.string(),
     description: joi.string(),
     companyName: joi.string(),
     website: joi.string(),
