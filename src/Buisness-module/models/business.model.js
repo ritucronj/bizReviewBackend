@@ -48,6 +48,7 @@ const businessSchema = new mongoose.Schema(
     country: {
       type: String,
       trim: true,
+      default: "",
     },
     language: {
       type: String,
@@ -67,6 +68,7 @@ const businessSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
+      default: "",
     },
     isEmailVerfied: {
       type: Boolean,
@@ -83,6 +85,25 @@ const businessSchema = new mongoose.Schema(
     userType: {
       type: String,
       default: "buisness",
+    },
+    locationName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    locationId: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    street: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

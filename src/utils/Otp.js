@@ -1,4 +1,7 @@
 const express = require("express");
+const {
+  LogContextImpl,
+} = require("twilio/lib/rest/serverless/v1/service/environment/log");
 const router = express.Router();
 
 require("dotenv").config();
@@ -11,13 +14,13 @@ const client = require("twilio")(
 );
 
 router.post("/sendotp", async (req, res) => {
-  const { mobile } = req.body;
+  const { email } = req.body;
   try {
     const otpResponse = await client.verify.v2
       .services(process.env.TWILIO_SERVICE_SID)
       .verifications.create({
-        to: `+91${mobile}`,
-        channel: "sms",
+        to: `${email}`,
+        channel: "email",
       });
     return res.send({ message: `OTP sent successfully` });
   } catch (error) {
@@ -26,15 +29,18 @@ router.post("/sendotp", async (req, res) => {
 });
 
 router.post("/verifyotp", async (req, res) => {
-  const { mobile, otp } = req.body;
+  const { email, otp } = req.body;
   try {
     const verifiedResponse = await client.verify.v2
       .services(process.env.TWILIO_SERVICE_SID)
       .verificationChecks.create({
-        to: `+91${mobile}`,
+        to: `${email}`,
         code: otp,
       });
-    return res.send({ message: `OTP verified successfully` });
+    if (verifiedResponse.status === "approved") {
+      return res.send({ message: `OTP verified successfully` });
+    }
+    return res.status(400).send({ message: `Invalid OTP` });
   } catch (error) {
     return res.status(500).send({ message: `Internal Server Error` });
   }
