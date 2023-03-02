@@ -152,8 +152,9 @@ const loginBusiness = async (req, res) => {
 const getBusiness = async (req, res) => {
   try {
     const id = req.params.id;
-    const userData = await Business.findOne({ id });
-    if (!userData) {
+    const userData = await Business.findOne({ uId: id });
+
+    if (!userData || userData.isDeleted === true) {
       return res.status(404).send({ message: `User not found.` });
     }
     return res.send({ userData });
@@ -188,6 +189,10 @@ const updateBusinessProfile = async (req, res) => {
 const deleteBusiness = async (req, res) => {
   try {
     const id = req.params.id;
+    const checkUser = await Business.findOne({ uId: id });
+    if (!checkUser || checkUser.isDeleted === true) {
+      return res.status(404).send({ message: `User not found.` });
+    }
     const deleteProfile = await Business.findOneAndUpdate(
       { uId: id },
       { $set: { isDeleted: true } },

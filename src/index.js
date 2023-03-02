@@ -8,11 +8,12 @@ const app = express();
 const userRoutes = require("./Reviewers-module/routes/user.routes");
 const reviewRoutes = require("./Reviewers-module/routes/review.routes");
 const businessRoutes = require("./Buisness-module/routes/buisness.routes");
-const otpRoutes = require("./utils/Otp");
+//const otpRoutes = require("./utils/Otp"); //[Old implementation]
 const search = require("./search-module/routes/search.routes");
 const adminRoutes = require("./admin-module/routes/admin.routes");
 const dashboardRoutes = require("./admin-module/routes/dashboard.routes");
 const paypalRoutes = require("../src/Buisness-module/paypal");
+const otpRoutes = require("../src/Reviewers-module/controller/otp.controller");
 
 app.use(express.json());
 app.use(cors());
