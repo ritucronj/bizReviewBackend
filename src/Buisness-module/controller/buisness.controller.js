@@ -246,6 +246,13 @@ const searchReviews = async (req, res) => {
       }
       return res.send(findReviews);
     }
+    if (!(name && email && startDate && endDate && rating)) {
+      const reviews = await Review.find();
+      if (reviews.length === 0) {
+        return res.status(404).send({ message: `Reviews not found` });
+      }
+      return res.send(reviews);
+    }
     return res.status(404).send({ message: `No matching results found` });
   } catch (error) {
     console.log(error);
