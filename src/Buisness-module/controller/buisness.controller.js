@@ -239,7 +239,44 @@ const searchReviews = async (req, res) => {
             }
           });
         item.reviews = review;
-        item.createdBy = userData;
+        item.createdBy = JSON.stringify(userData);
+        if (review.length && userData !== null) {
+          data.push(item);
+        }
+      });
+      return res.send(data);
+    }
+    if (email && startDate && endDate && rating) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const userData = {
+        email: findUser?.email,
+        name: findUser?.name,
+        profilePicture: findUser?.profilePicture,
+        userType: findUser?.userType,
+        isDeleted: findUser?.isDeleted,
+        createdAt: findUser?.createdAt,
+        updatedAt: findUser?.updatedAt,
+      };
+      const reviewFilter = {
+        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
+      };
+      const findReviews = await Review.find({
+        $and: [
+          reviewFilter,
+          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+        ],
+      });
+      const data = [];
+      findReviews.map((item) => {
+        const review = [];
+        item.reviews &&
+          item.reviews.map((item2) => {
+            if (item2.rating == parseInt(rating)) {
+              review.push(item2);
+            }
+          });
+        item.reviews = review;
+        item.createdBy = JSON.stringify(userData);
         if (review.length && userData !== null) {
           data.push(item);
         }
@@ -268,7 +305,7 @@ const searchReviews = async (req, res) => {
       });
       const data = [];
       findReviews.map((item) => {
-        item.createdBy = userData;
+        item.createdBy = JSON.stringify(userData);
         data.push(item);
       });
       return res.send(data);
@@ -295,7 +332,7 @@ const searchReviews = async (req, res) => {
       });
       const data = [];
       findReviews.map((item) => {
-        item.createdBy = userData;
+        item.createdBy = JSON.stringify(userData);
         data.push(item);
       });
       return res.send(data);
@@ -325,7 +362,7 @@ const searchReviews = async (req, res) => {
             }
           });
         item.reviews = review;
-        item.createdBy = userData;
+        item.createdBy = JSON.stringify(userData);
         if (review.length && userData !== null) {
           data.push(item);
         }
@@ -357,7 +394,7 @@ const searchReviews = async (req, res) => {
             }
           });
         item.reviews = review;
-        item.createdBy = userData;
+        item.createdBy = JSON.stringify(userData);
         if (review.length && userData !== null) {
           data.push(item);
         }
