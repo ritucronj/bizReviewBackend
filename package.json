@@ -24,7 +24,7 @@
     "passport-google-oauth": "^2.0.0",
     "paypal-rest-sdk": "^1.8.1",
     "randomstring": "^1.2.3",
-    "stripe": "^11.12.0",
+    "stripe": "^11.13.0",
     "twilio": "^4.7.2",
     "uuid": "^9.0.0"
   },
