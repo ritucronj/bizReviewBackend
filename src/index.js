@@ -9,6 +9,7 @@ const app = express();
 
 const userRoutes = require("./Reviewers-module/routes/user.routes");
 const reviewRoutes = require("./Reviewers-module/routes/review.routes");
+// const reviewRoutes = require("./Review-module/routes/review.routes");
 const businessRoutes = require("./Buisness-module/routes/buisness.routes");
 //const otpRoutes = require("./utils/Otp"); //[Old implementation]
 const search = require("./search-module/routes/search.routes");
