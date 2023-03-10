@@ -1,12 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const key = process.env.STRIPE_SECRET_KEY;
+const secretkey = process.env.STRIPE_SECRET_KEY;
+const stripe = require("stripe")(secretkey);
+const Business = require("./models/business.model");
 
-const stripe = require("stripe")(key);
 require("dotenv").config();
+let name;
+let price;
+let uid;
 
 router.post("/create-checkout-session", async (req, res) => {
-  const { name, price } = req.body;
+  uid = req.body.id;
+  name = req.body.name;
+  price = req.body.price;
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
@@ -23,12 +29,38 @@ router.post("/create-checkout-session", async (req, res) => {
       },
     ],
     mode: "payment",
-    success_url: `${process.env.SERVER_ADDR1}/success`,
-    cancel_url: `${process.env.SERVER_ADDR1}/cancel`,
+    success_url: `${process.env.SERVER_ADDR}/success`,
+    cancel_url: `${process.env.SERVER_ADDR}/cancel`,
   });
 
   res.json({ data: session });
-  //   res.redirect(session.url);
+});
+
+router.post("/webhook", async (req, res) => {
+  const event = req.body;
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data;
+    const date = new Date();
+
+    const payload = {
+      planType: name,
+      planPurchaseDate: date,
+      isPlanExpired: false,
+    };
+
+    const updateData = await Business.findOneAndUpdate(
+      { uId: uid },
+      { $set: payload },
+      {
+        new: true,
+      }
+    );
+
+    res.json(session);
+  } else {
+    res.json({ received: false });
+  }
 });
 
 module.exports = router;

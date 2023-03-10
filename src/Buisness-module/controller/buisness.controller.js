@@ -166,6 +166,7 @@ const getBusiness = async (req, res) => {
 const updateBusinessProfile = async (req, res) => {
   try {
     const id = req.params.id;
+
     const { error } = updateBusinessValidation(req.body);
     if (error) {
       return res.status(400).send({ message: error.details[0].message });
@@ -180,9 +181,9 @@ const updateBusinessProfile = async (req, res) => {
         new: true,
       }
     );
-    return res.send({ message: `Profile updated successfully.` });
+    return res?.send({ message: `Profile updated successfully.` });
   } catch (error) {
-    return res.status(500).send({ messgae: `Internal Server Error` });
+    return res?.status(500).send({ messgae: `Internal Server Error` });
   }
 };
 
