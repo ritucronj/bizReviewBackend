@@ -5,6 +5,19 @@ const businessSchema = new mongoose.Schema(
     uId: {
       type: String,
     },
+    planType: {
+      type: String,
+      enum: ['free','silver', 'gold', 'platinum', 'diamond'],
+      required: true,
+      default:'free'
+    },
+    planPurchaseDate:{
+      type:Date
+    },
+    isPlanExpired:{
+     type:Boolean,
+     default:true
+    },
     website: {
       type: String,
       trim: true,

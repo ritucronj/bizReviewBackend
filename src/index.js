@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const cron = require('node-cron');
+const Business = require('./Buisness-module/models/business.model');
 
 const app = express();
 
@@ -37,3 +39,27 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Express App running on port ${port}`);
 });
+
+cron.schedule('0 0 * * *', async () => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const businessesToUpdate = await Business.find({
+      planPurchaseDate: { $lt: thirtyDaysAgo },
+      isPlanExpired: { $ne: true }
+    });
+
+    businessesToUpdate.forEach(async business => {
+      business.isPlanExpired = true;
+      business.planType='free';
+      await business.save();
+    });
+
+    console.log(`Updated ${businessesToUpdate.length} businesses.`);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+
