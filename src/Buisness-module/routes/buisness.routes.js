@@ -38,6 +38,6 @@ router.post("/forgot-password", forgotPass);
 
 router.put("/reset-password", resetPass);
 
-router.post("/reviews/:reviewId/reply/:createdById", reviewReply);
+router.post("/reviews/:id/reply", reviewReply);
 
 module.exports = router;
