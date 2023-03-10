@@ -14,10 +14,10 @@ const userUpdateValidataion = (data) => {
     name: joi.string(),
     country: joi.string(),
     language: joi.string(),
-    profilePicture: joi.string()
+    profilePicture: joi.string(),
   });
   return schema.validate(data);
-}
+};
 
 const ssoRegistrationValidation = (data) => {
   const schema = joi.object({
@@ -46,6 +46,10 @@ const updateReviewValidation = (data) => {
     rating: joi.string().min(1),
     description: joi.string(),
     dateOfExperience: joi.string(),
+    replies: joi.array(),
+    userId: joi.string(),
+    replyMessage: joi.string(),
+    timestamps: joi.date(),
   });
   return schema.validate(data);
 };
@@ -55,5 +59,5 @@ module.exports = {
   createReviewValidation,
   updateReviewValidation,
   ssoRegistrationValidation,
-  userUpdateValidataion
+  userUpdateValidataion,
 };

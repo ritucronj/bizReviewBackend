@@ -12,6 +12,7 @@ const {
   searchReviews,
   forgotPass,
   resetPass,
+  reviewReply,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -36,5 +37,7 @@ router.get("/review-search", searchReviews);
 router.post("/forgot-password", forgotPass);
 
 router.put("/reset-password", resetPass);
+
+router.post("/reviews/:reviewId/reply/:createdById", reviewReply);
 
 module.exports = router;

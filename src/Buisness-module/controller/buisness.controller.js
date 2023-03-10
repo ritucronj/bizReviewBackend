@@ -20,7 +20,9 @@ const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
 const randomstring = require("randomstring");
 require("dotenv").config();
-
+const {
+  updateReviewValidation,
+} = require("../../Reviewers-module/services/Validation-handler");
 const createBusiness = async (req, res) => {
   try {
     const { error } = createBusinessValidation(req.body);
@@ -212,6 +214,7 @@ const searchReviews = async (req, res) => {
     if (name && startDate && endDate && rating) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -249,6 +252,7 @@ const searchReviews = async (req, res) => {
     if (email && startDate && endDate && rating) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -286,6 +290,7 @@ const searchReviews = async (req, res) => {
     if (name && startDate && endDate) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -313,6 +318,7 @@ const searchReviews = async (req, res) => {
     if (email && startDate && endDate) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -340,6 +346,7 @@ const searchReviews = async (req, res) => {
     if (name && rating) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -372,6 +379,7 @@ const searchReviews = async (req, res) => {
     if (email && rating) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -480,6 +488,7 @@ const searchReviews = async (req, res) => {
     if (name) {
       const findUser = await User.findOne(filter);
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -502,6 +511,7 @@ const searchReviews = async (req, res) => {
     if (email) {
       const findUser = await User.findOne(filter);
       const userData = {
+        id: findUser?._id,
         email: findUser?.email,
         name: findUser?.name,
         profilePicture: findUser?.profilePicture,
@@ -599,6 +609,80 @@ const resetPass = async (req, res) => {
   }
 };
 
+const reviewReply = async (req, res) => {
+  try {
+    const reviewId = req.params.reviewId;
+    const userId = req.body.userId;
+    const createdById = req.params.createdBy;
+    const replyMessage = req.body.reply;
+
+    const businessReview = await Review.find();
+    let reply = [];
+    businessReview.map((item) => {
+      item.reviews &&
+        item.reviews.map((item2) => {
+          let reply1 = item2.replies;
+          if (item2.uId == reviewId) {
+            reply1.push({
+              userId: userId,
+              replyMessage: replyMessage,
+              timestamps: new Date(),
+            });
+            reply = reply1;
+          }
+        });
+      console.log(reply);
+    });
+    console.log(reply);
+
+    // BusinessReviews.findOneAndUpdate(
+    //   {
+    //     buisnessId: id,
+    //   },
+    //   { $set: item }
+    // );
+    // // await businessReview.save();
+    // return res.send({ msg: "Reply added successfully", data: businessReview });
+    // console.log(businessReview);
+    // c;
+    const { error } = updateReviewValidation(req.body);
+    if (error)
+      return res
+        .status(statusCodes[400].value)
+        .send({ msg: error.details[0].message });
+    const checkReview = new Promise(async (resolve, reject) => {
+      const findReviewAndUpdate = await Review.updateOne(
+        {
+          createdBy: createdById,
+          "reviews.uId": reviewId,
+        },
+        {
+          $push: {
+            "reviews.$.replies": req.body,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+      const error = findReviewAndUpdate.matchedCount == 0 ? true : false;
+      if (error) reject(new Error("No Reviews Found"));
+      resolve(findReviewAndUpdate);
+    });
+    checkReview
+      .then((data) => {
+        return res.status(statusCodes[200].value).send({ data: data });
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(statusCodes[400].value).send({ msg: err.message });
+      });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send({ msg: error.message });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -611,4 +695,5 @@ module.exports = {
   searchReviews,
   forgotPass,
   resetPass,
+  reviewReply,
 };

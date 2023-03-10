@@ -1,47 +1,66 @@
 const mongoose = require("mongoose");
 
-const reviews = new mongoose.Schema({
-    uId: {
-        type: String,
-    },
-    reviewedBuisnessId: {
-        type: String
-    },
+const reviews = new mongoose.Schema(
+  {
     title: {
-        type: String
+      type: String,
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    businessId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Business",
+      required: true,
     },
     rating: {
-        type: Number,
+      type: Number,
+      required: true,
     },
     description: {
-        type: String,
+      type: String,
+      required: true,
     },
     dateOfExperience: {
-        type: String,
+      type: Date,
+      required: true,
     },
     status: {
-        type: String,
-        default: "Pending"
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
     isDeleted: {
-        type: Boolean,
-        default: false
-    }
-}, { timestamps: true });
-
-
-const userReviewSchema = new mongoose.Schema({
-    createdBy: {
-        type: String,
-        required: true
+      type: Boolean,
+      default: false,
     },
-    isUserActive: {
-        type: Boolean,
-        default: true
-    },
-    reviews: {
-        type: [reviews]
-    }
-}, { timestamps: true });
+    replies: [
+      {
+        id: {
+          type: String,
+          required: true,
+          unique: true,
+        },
+        createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        date: {
+          type: Date,
+          required: true,
+        },
+        description: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("review", userReviewSchema);
+module.exports = mongoose.model("review", reviews);
