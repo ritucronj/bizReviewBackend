@@ -500,81 +500,8 @@ const resetPass = async (req, res) => {
 };
 
 const reviewReply = async (req, res) => {
-  // try {
-  //   const reviewId = req.params.reviewId;
-  //   const userId = req.body.userId;
-  //   const createdById = req.params.createdBy;
-  //   const replyMessage = req.body.reply;
-
-  //   const businessReview = await Review.find();
-  //   let reply = [];
-  //   businessReview.map((item) => {
-  //     item.reviews &&
-  //       item.reviews.map((item2) => {
-  //         let reply1 = item2.replies;
-  //         if (item2.uId == reviewId) {
-  //           reply1.push({
-  //             userId: userId,
-  //             replyMessage: replyMessage,
-  //             timestamps: new Date(),
-  //           });
-  //           reply = reply1;
-  //         }
-  //       });
-  //     console.log(reply);
-  //   });
-  //   console.log(reply);
-
-  //   // BusinessReviews.findOneAndUpdate(
-  //   //   {
-  //   //     buisnessId: id,
-  //   //   },
-  //   //   { $set: item }
-  //   // );
-  //   // // await businessReview.save();
-  //   // return res.send({ msg: "Reply added successfully", data: businessReview });
-  //   // console.log(businessReview);
-  //   // c;
-  //   const { error } = updateReviewValidation(req.body);
-  //   if (error)
-  //     return res
-  //       .status(statusCodes[400].value)
-  //       .send({ msg: error.details[0].message });
-  //   const checkReview = new Promise(async (resolve, reject) => {
-  //     const findReviewAndUpdate = await Review.updateOne(
-  //       {
-  //         createdBy: createdById,
-  //         "reviews.uId": reviewId,
-  //       },
-  //       {
-  //         $push: {
-  //           "reviews.$.replies": req.body,
-  //         },
-  //       },
-  //       {
-  //         new: true,
-  //       }
-  //     );
-  //     const error = findReviewAndUpdate.matchedCount == 0 ? true : false;
-  //     if (error) reject(new Error("No Reviews Found"));
-  //     resolve(findReviewAndUpdate);
-  //   });
-  //   checkReview
-  //     .then((data) => {
-  //       return res.status(statusCodes[200].value).send({ data: data });
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //       return res.status(statusCodes[400].value).send({ msg: err.message });
-  //     });
-  // } catch (error) {
-  //   console.log(error.message);
-  //   return res.status(500).send({ msg: error.message });
-  // }
   try {
     const { createdBy, description } = req.body;
-
-    // Find the review by ID and add the new reply to the replies array
     const review = await Review.findByIdAndUpdate(
       req.params.id,
       {
