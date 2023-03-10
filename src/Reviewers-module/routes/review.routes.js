@@ -1,12 +1,8 @@
 const express = require("express");
 const {
   createCompanyReview,
-  readReviewById,
-  updateCompanyReview,
-  readAllReviewsByUser,
-  deleteReviewById,
-  recentReviews,
-  recentReviewsPublic,
+ readAllReviews,
+ readAllReviewsByUser
 } = require("../controller/review.controller");
 const router = express.Router();
 const review = require("../models/review.models");
@@ -18,11 +14,12 @@ router.get("/getAll", async (req, res) => {
 });
 
 router.post("/createCompanyReview/:Id/:businessId", createCompanyReview);
-router.get("/getReviewById/:review/:user", readReviewById);
-router.get("/getAllReviewsByUser/:user", readAllReviewsByUser);
-router.get("/recentReviews/:Id", recentReviews);
-router.put("/updateReview/:review/:user", updateCompanyReview);
-router.delete("/deleteReviewById/:review/:user", deleteReviewById);
-router.get("/recentReviewsPublic", recentReviewsPublic);
+// router.get("/getReviewById/:review/:user", readReviewById);
+router.get("/getAllReviews", readAllReviews);
+router.get("/getAllReviewsByUser/:userId", readAllReviewsByUser);
+// router.get("/recentReviews/:Id", recentReviews);
+// router.put("/updateReview/:review/:user", updateCompanyReview);
+// router.delete("/deleteReviewById/:review/:user", deleteReviewById);
+// router.get("/recentReviewsPublic", recentReviewsPublic);
 
 module.exports = router;

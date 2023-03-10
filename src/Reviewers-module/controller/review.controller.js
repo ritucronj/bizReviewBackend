@@ -16,7 +16,6 @@ const createCompanyReview = async (req, res) => {
       isDeleted,
       replies,
     } = req.body;
-    console.log(req.params);
     const createdBy = req.params.Id;
     const businessId = req.params.businessId;
 
@@ -35,7 +34,6 @@ const createCompanyReview = async (req, res) => {
 
     // Save the review to the database
     const savedReview = await reviews.save();
-    console.log(savedReview);
 
     // Return the saved review as the response
     res.status(201).json(savedReview);
@@ -45,41 +43,41 @@ const createCompanyReview = async (req, res) => {
   }
 };
 
-const readReviewById = async (req, res) => {
-  try {
-    let reviewId = req.params.review;
-    let userId = req.params.user;
-    const checkReview = new Promise(async (resolve, reject) => {
-      const findReview = await review.findOne(
-        {
-          $and: [{ createdBy: userId }, { "reviews.uId": reviewId }],
-        },
-        {
-          "reviews.$": 1,
-        }
-      );
-      if (findReview.reviews[0].isDeleted === true)
-        reject(new Error("Something went wrong"));
-      const error = findReview === null ? true : false;
-      if (error) reject(new Error("No Review Found"));
-      resolve(findReview);
-    });
-    checkReview
-      .then((result) => {
-        return res.status(statusCodes[200].value).send({ data: result });
-      })
-      .catch((err) => {
-        return res.status(statusCodes[400].value).send({ msg: err.message });
-      });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(statusCodes[500].value)
-      .send({ status: statusCodes[500].message, msg: error.message });
-  }
-};
+// const readReviewById = async (req, res) => {
+//   try {
+//     let reviewId = req.params.review;
+//     let userId = req.params.user;
+//     const checkReview = new Promise(async (resolve, reject) => {
+//       const findReview = await review.findOne(
+//         {
+//           $and: [{ createdBy: userId }, { "reviews.uId": reviewId }],
+//         },
+//         {
+//           "reviews.$": 1,
+//         }
+//       );
+//       if (findReview.reviews[0].isDeleted === true)
+//         reject(new Error("Something went wrong"));
+//       const error = findReview === null ? true : false;
+//       if (error) reject(new Error("No Review Found"));
+//       resolve(findReview);
+//     });
+//     checkReview
+//       .then((result) => {
+//         return res.status(statusCodes[200].value).send({ data: result });
+//       })
+//       .catch((err) => {
+//         return res.status(statusCodes[400].value).send({ msg: err.message });
+//       });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(statusCodes[500].value)
+//       .send({ status: statusCodes[500].message, msg: error.message });
+//   }
+// };
 
-const readAllReviewsByUser = async (req, res) => {
+const readAllReviews = async (req, res) => {
   try {
     // Find all reviews from the database and populate their replies
     const reviews = await review
@@ -95,207 +93,219 @@ const readAllReviewsByUser = async (req, res) => {
   }
 };
 
-const recentReviews = async (req, res) => {
+const readAllReviewsByUser=async(req,res)=>{
+  const userId = req.params.userId;
   try {
-    let userId = req.params.Id;
-    const checkRecentReviews = new Promise(async (resolve, reject) => {
-      const getRecentReviews = await review.aggregate([
-        {
-          $match: {
-            $and: [{ createdBy: userId }, { isUserActive: true }],
-          },
-        },
-        {
-          $project: {
-            reviews: {
-              $filter: {
-                input: "$reviews",
-                as: "review",
-                cond: { $eq: ["$$review.isDeleted", false] },
-              },
-            },
-          },
-        },
-        {
-          $unwind: "$reviews",
-        },
-        {
-          $sort: {
-            "reviews.createdAt": -1,
-          },
-        },
-        // {
-        //     "$limit": 2
-        // }
-      ]);
-      const error = getRecentReviews.length == 0 ? true : false;
-      if (error) reject(new Error("No Documents Found"));
-      resolve(getRecentReviews);
-    });
-    checkRecentReviews
-      .then((result) => {
-        return res.status(statusCodes[200].value).send({ data: result });
-      })
-      .catch((err) => {
-        return res.status(statusCodes[400].value).send({ msg: err.message });
-      });
-  } catch (error) {
-    return res
-      .status(statusCodes[500].value)
-      .send({ status: statusCodes[500].message, msg: error.message });
+    const reviews = await review.find({ createdBy: userId }).populate("businessId").populate("createdBy");
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
   }
-};
+}
 
-const updateCompanyReview = async (req, res) => {
-  try {
-    let reviewId = req.params.review;
-    let userId = req.params.user;
-    const { error } = updateReviewValidation(req.body);
-    if (error)
-      return res
-        .status(statusCodes[400].value)
-        .send({ msg: error.details[0].message });
-    const checkReview = new Promise(async (resolve, reject) => {
-      const findReviewAndUpdate = await review.updateOne(
-        {
-          createdBy: userId,
-          "reviews.uId": reviewId,
-        },
-        {
-          $set: {
-            "reviews.$.title": req.body.title,
-            "reviews.$.description": req.body.description,
-            "reviews.$.rating": req.body.rating,
-            "reviews.$.dateOfExperience": req.body.dateOfExperience,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-      const error = findReviewAndUpdate.matchedCount == 0 ? true : false;
-      if (error) reject(new Error("No Reviews Found"));
-      resolve(findReviewAndUpdate);
-    });
-    checkReview
-      .then((data) => {
-        return res.status(statusCodes[200].value).send({ data: data });
-      })
-      .catch((err) => {
-        console.error(err);
-        return res.status(statusCodes[400].value).send({ msg: err.message });
-      });
-  } catch (error) {
-    return res
-      .status(statusCodes[500].value)
-      .send({ status: statusCodes[500].message, msg: error.message });
-  }
-};
+// const recentReviews = async (req, res) => {
+//   try {
+//     let userId = req.params.Id;
+//     const checkRecentReviews = new Promise(async (resolve, reject) => {
+//       const getRecentReviews = await review.aggregate([
+//         {
+//           $match: {
+//             $and: [{ createdBy: userId }, { isUserActive: true }],
+//           },
+//         },
+//         {
+//           $project: {
+//             reviews: {
+//               $filter: {
+//                 input: "$reviews",
+//                 as: "review",
+//                 cond: { $eq: ["$$review.isDeleted", false] },
+//               },
+//             },
+//           },
+//         },
+//         {
+//           $unwind: "$reviews",
+//         },
+//         {
+//           $sort: {
+//             "reviews.createdAt": -1,
+//           },
+//         },
+//         // {
+//         //     "$limit": 2
+//         // }
+//       ]);
+//       const error = getRecentReviews.length == 0 ? true : false;
+//       if (error) reject(new Error("No Documents Found"));
+//       resolve(getRecentReviews);
+//     });
+//     checkRecentReviews
+//       .then((result) => {
+//         return res.status(statusCodes[200].value).send({ data: result });
+//       })
+//       .catch((err) => {
+//         return res.status(statusCodes[400].value).send({ msg: err.message });
+//       });
+//   } catch (error) {
+//     return res
+//       .status(statusCodes[500].value)
+//       .send({ status: statusCodes[500].message, msg: error.message });
+//   }
+// };
 
-const deleteReviewById = async (req, res) => {
-  try {
-    let reviewId = req.params.review;
-    let userId = req.params.user;
-    const { error } = updateReviewValidation(req.body);
-    if (error)
-      return res
-        .status(statusCodes[400].value)
-        .send({ msg: error.details[0].message });
-    const checkReview = new Promise(async (resolve, reject) => {
-      const findReviewAndUpdate = await review.findOneAndUpdate(
-        {
-          $and: [
-            { createdBy: userId },
-            { "reviews.uId": reviewId },
-            { "reviews.isDeleted": false },
-          ],
-        },
-        {
-          $set: {
-            "reviews.$.isDeleted": true,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-      const error = findReviewAndUpdate === null ? true : false;
-      if (error) reject(new Error("No Reviews Found"));
-      resolve("Review Successfully Deleted");
-    });
-    checkReview
-      .then((data) => {
-        return res.status(statusCodes[200].value).send({ data: data });
-      })
-      .catch((err) => {
-        console.error(err);
-        return res.status(statusCodes[400].value).send({ msg: err.message });
-      });
-  } catch (error) {
-    return res
-      .status(statusCodes[500].value)
-      .send({ status: statusCodes[500].message, msg: error.message });
-  }
-};
+// const updateCompanyReview = async (req, res) => {
+//   try {
+//     let reviewId = req.params.review;
+//     let userId = req.params.user;
+//     const { error } = updateReviewValidation(req.body);
+//     if (error)
+//       return res
+//         .status(statusCodes[400].value)
+//         .send({ msg: error.details[0].message });
+//     const checkReview = new Promise(async (resolve, reject) => {
+//       const findReviewAndUpdate = await review.updateOne(
+//         {
+//           createdBy: userId,
+//           "reviews.uId": reviewId,
+//         },
+//         {
+//           $set: {
+//             "reviews.$.title": req.body.title,
+//             "reviews.$.description": req.body.description,
+//             "reviews.$.rating": req.body.rating,
+//             "reviews.$.dateOfExperience": req.body.dateOfExperience,
+//           },
+//         },
+//         {
+//           new: true,
+//         }
+//       );
+//       const error = findReviewAndUpdate.matchedCount == 0 ? true : false;
+//       if (error) reject(new Error("No Reviews Found"));
+//       resolve(findReviewAndUpdate);
+//     });
+//     checkReview
+//       .then((data) => {
+//         return res.status(statusCodes[200].value).send({ data: data });
+//       })
+//       .catch((err) => {
+//         console.error(err);
+//         return res.status(statusCodes[400].value).send({ msg: err.message });
+//       });
+//   } catch (error) {
+//     return res
+//       .status(statusCodes[500].value)
+//       .send({ status: statusCodes[500].message, msg: error.message });
+//   }
+// };
 
-const recentReviewsPublic = async (req, res) => {
-  try {
-    const findUsers = await user.find();
-    const resultArr = [];
-    for (let i = 0; i < findUsers.length; i++) {
-      const reviews = await review.aggregate([
-        {
-          $match: {
-            createdBy: findUsers[i].uId,
-          },
-        },
-        {
-          $project: {
-            reviews: {
-              $filter: {
-                input: "$reviews",
-                as: "review",
-                cond: { $eq: ["$$review.isDeleted", false] },
-              },
-            },
-          },
-        },
+// const deleteReviewById = async (req, res) => {
+//   try {
+//     let reviewId = req.params.review;
+//     let userId = req.params.user;
+//     const { error } = updateReviewValidation(req.body);
+//     if (error)
+//       return res
+//         .status(statusCodes[400].value)
+//         .send({ msg: error.details[0].message });
+//     const checkReview = new Promise(async (resolve, reject) => {
+//       const findReviewAndUpdate = await review.findOneAndUpdate(
+//         {
+//           $and: [
+//             { createdBy: userId },
+//             { "reviews.uId": reviewId },
+//             { "reviews.isDeleted": false },
+//           ],
+//         },
+//         {
+//           $set: {
+//             "reviews.$.isDeleted": true,
+//           },
+//         },
+//         {
+//           new: true,
+//         }
+//       );
+//       const error = findReviewAndUpdate === null ? true : false;
+//       if (error) reject(new Error("No Reviews Found"));
+//       resolve("Review Successfully Deleted");
+//     });
+//     checkReview
+//       .then((data) => {
+//         return res.status(statusCodes[200].value).send({ data: data });
+//       })
+//       .catch((err) => {
+//         console.error(err);
+//         return res.status(statusCodes[400].value).send({ msg: err.message });
+//       });
+//   } catch (error) {
+//     return res
+//       .status(statusCodes[500].value)
+//       .send({ status: statusCodes[500].message, msg: error.message });
+//   }
+// };
 
-        {
-          $unwind: "$reviews",
-        },
-        {
-          $sort: {
-            "reviews.createdAt": -1,
-          },
-        },
-        {
-          $addFields: {
-            userDetails: findUsers[i],
-          },
-        },
-      ]);
-      // console.log(reviews);
-      if (reviews.length === 0) {
-        continue;
-      } else {
-        resultArr.push(reviews[0]);
-      }
-    }
-    return res.status(statusCodes[200].value).send({ data: resultArr });
-  } catch (error) {
-    return res
-      .status(statusCodes[500].value)
-      .send({ status: statusCodes[500].message, msg: error.message });
-  }
-};
+// const recentReviewsPublic = async (req, res) => {
+//   try {
+//     const findUsers = await user.find();
+//     const resultArr = [];
+//     for (let i = 0; i < findUsers.length; i++) {
+//       const reviews = await review.aggregate([
+//         {
+//           $match: {
+//             createdBy: findUsers[i].uId,
+//           },
+//         },
+//         {
+//           $project: {
+//             reviews: {
+//               $filter: {
+//                 input: "$reviews",
+//                 as: "review",
+//                 cond: { $eq: ["$$review.isDeleted", false] },
+//               },
+//             },
+//           },
+//         },
+
+//         {
+//           $unwind: "$reviews",
+//         },
+//         {
+//           $sort: {
+//             "reviews.createdAt": -1,
+//           },
+//         },
+//         {
+//           $addFields: {
+//             userDetails: findUsers[i],
+//           },
+//         },
+//       ]);
+//       // console.log(reviews);
+//       if (reviews.length === 0) {
+//         continue;
+//       } else {
+//         resultArr.push(reviews[0]);
+//       }
+//     }
+//     return res.status(statusCodes[200].value).send({ data: resultArr });
+//   } catch (error) {
+//     return res
+//       .status(statusCodes[500].value)
+//       .send({ status: statusCodes[500].message, msg: error.message });
+//   }
+// };
 
 module.exports = {
   createCompanyReview,
-  readReviewById,
-  readAllReviewsByUser,
-  recentReviews,
-  updateCompanyReview,
-  deleteReviewById,
-  recentReviewsPublic,
+  // readReviewById,
+  readAllReviews,
+  readAllReviewsByUser
+  // recentReviews,
+  // updateCompanyReview,
+  // deleteReviewById,
+  // recentReviewsPublic,
 };
