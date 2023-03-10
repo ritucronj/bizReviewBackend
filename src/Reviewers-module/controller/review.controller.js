@@ -81,7 +81,7 @@ const readAllReviews = async (req, res) => {
   try {
     // Find all reviews from the database and populate their replies
     const reviews = await review
-      .find()
+      .find({isDeleted: false})
       .populate("createdBy")
       .populate("businessId");
     console.log(reviews);
@@ -96,11 +96,35 @@ const readAllReviews = async (req, res) => {
 const readAllReviewsByUser=async(req,res)=>{
   const userId = req.params.userId;
   try {
-    const reviews = await review.find({ createdBy: userId }).populate("businessId").populate("createdBy");
+    const reviews = await review.find({ createdBy: userId,isDeleted: false }).populate("businessId").populate("createdBy");
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+const updateCompanyReview=async (req, res) => {
+  try {
+    const { title, description, rating, dateOfExperience,status,isDeleted } = req.body;
+    const reviewData = await review.findById(req.params.reviewId);
+
+    if (!reviewData) {
+      return res.status(404).json({ message: 'ReviewData not found' });
+    }
+
+    reviewData.title = title || reviewData.title;
+    reviewData.description = description || reviewData.description;
+    reviewData.rating = rating || reviewData.rating;
+    reviewData.dateOfExperience = dateOfExperience || reviewData.dateOfExperience;
+    reviewData.status = status || reviewData.status;
+    reviewData.isDeleted = isDeleted || reviewData.isDeleted;
+
+    const updatedReviewData = await reviewData.save();
+    res.json(updatedReviewData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
   }
 }
 
@@ -303,9 +327,9 @@ module.exports = {
   createCompanyReview,
   // readReviewById,
   readAllReviews,
-  readAllReviewsByUser
+  readAllReviewsByUser,
   // recentReviews,
-  // updateCompanyReview,
+  updateCompanyReview
   // deleteReviewById,
   // recentReviewsPublic,
 };
