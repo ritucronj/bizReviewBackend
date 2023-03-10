@@ -20,6 +20,21 @@ const reviews = new mongoose.Schema(
     dateOfExperience: {
       type: String,
     },
+    replies: [
+      {
+        userId: {
+          type: String,
+          // type: mongoose.Schema.Types.ObjectId,
+          // ref: "User",
+        },
+        replyMessage: {
+          type: String,
+        },
+        timestamps: {
+          type: Date,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -42,9 +57,6 @@ const buisnessReview = new mongoose.Schema(
     },
     reviews: {
       type: [reviews],
-    },
-    userData: {
-      type: Object,
     },
   },
   { timestamps: true }

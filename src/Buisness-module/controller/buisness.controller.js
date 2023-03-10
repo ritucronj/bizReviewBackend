@@ -20,7 +20,9 @@ const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
 const randomstring = require("randomstring");
 require("dotenv").config();
-
+const {
+  updateReviewValidation,
+} = require("../../Reviewers-module/services/Validation-handler");
 const createBusiness = async (req, res) => {
   try {
     const { error } = createBusinessValidation(req.body);
@@ -208,198 +210,163 @@ const deleteBusiness = async (req, res) => {
 const searchReviews = async (req, res) => {
   try {
     const { name, email, rating, startDate, endDate } = req.query;
-    // console.log(name, rating);
     if (name && startDate && endDate && rating) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find({
+      const reviews = await Review.find({
         $and: [
-          reviewFilter,
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
           { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
         ],
-      });
-      const data = [];
-      findReviews.map((item) => {
-        const review = [];
-        item.reviews &&
-          item.reviews.map((item2) => {
-            if (item2.rating == parseInt(rating)) {
-              review.push(item2);
-            }
-          });
-        item.reviews = review;
-        item.createdBy = JSON.stringify(userData);
-        if (review.length && userData !== null) {
-          data.push(item);
-        }
-      });
-      return res.send(data);
-    }
-    if (email && startDate && endDate && rating) {
-      const findUser = await User.findOne({ email: new RegExp(email, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find({
-        $and: [
-          reviewFilter,
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
-        ],
-      });
-      const data = [];
-      findReviews.map((item) => {
-        const review = [];
-        item.reviews &&
-          item.reviews.map((item2) => {
-            if (item2.rating == parseInt(rating)) {
-              review.push(item2);
-            }
-          });
-        item.reviews = review;
-        item.createdBy = JSON.stringify(userData);
-        if (review.length && userData !== null) {
-          data.push(item);
-        }
-      });
-      return res.send(data);
-    }
-    if (name && startDate && endDate) {
-      const findUser = await User.findOne({ name: new RegExp(name, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find({
-        $and: [
-          reviewFilter,
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
-        ],
-      });
-      const data = [];
-      findReviews.map((item) => {
-        item.createdBy = JSON.stringify(userData);
-        data.push(item);
-      });
-      return res.send(data);
-    }
-    if (email && startDate && endDate) {
-      const findUser = await User.findOne({ email: new RegExp(email, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find({
-        $and: [
-          reviewFilter,
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
-        ],
-      });
-      const data = [];
-      findReviews.map((item) => {
-        item.createdBy = JSON.stringify(userData);
-        data.push(item);
-      });
-      return res.send(data);
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
     }
     if (name && rating) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find(reviewFilter);
-      const data = [];
-      findReviews.map((item) => {
-        const review = [];
-        item.reviews &&
-          item.reviews.map((item2) => {
-            if (item2.rating == parseInt(rating)) {
-              review.push(item2);
-            }
-          });
-        item.reviews = review;
-        item.createdBy = JSON.stringify(userData);
-        if (review.length && userData !== null) {
-          data.push(item);
-        }
-      });
-      return res.send(data);
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (email && startDate && endDate && rating) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && rating) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && startDate && endDate) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && rating) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (email && startDate && endDate) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && rating) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
     }
     if (email && rating) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find(reviewFilter);
-      const data = [];
-      findReviews.map((item) => {
-        const review = [];
-        item.reviews &&
-          item.reviews.map((item2) => {
-            if (item2.rating == parseInt(rating)) {
-              review.push(item2);
-            }
-          });
-        item.reviews = review;
-        item.createdBy = JSON.stringify(userData);
-        if (review.length && userData !== null) {
-          data.push(item);
-        }
-      });
-      return res.send(data);
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
     }
     const filter = {};
     if (name) {
@@ -410,146 +377,79 @@ const searchReviews = async (req, res) => {
       filter.email = new RegExp(email, "i");
     }
 
-    if (rating) {
-      filter.rating = parseInt(rating);
-    }
-
     if (startDate && endDate) {
       filter.createdAt = { $gte: new Date(startDate), $lt: new Date(endDate) };
     }
     if (startDate || endDate) {
-      const findUser = await User.find();
-      const findReview = await Review.find(filter);
-      const data = [];
-      findReview.map((item) => {
-        let userData = null;
-        findUser.map((user) => {
-          if (item.createdBy == JSON.stringify(user?._id)?.split('"')[1]) {
-            userData = {
-              email: user?.email,
-              name: user?.name,
-              profilePicture: user?.profilePicture,
-              userType: user?.userType,
-              isDeleted: user?.isDeleted,
-              createdAt: user?.createdAt,
-              updatedAt: user?.updatedAt,
-            };
-          }
-        });
-        if (userData !== null) {
-          item.createdBy = JSON.stringify(userData);
-          data.push(item);
-        }
-      });
-      return res.send(data);
+      const reviews = await Review.find(filter)
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+
+      return res.status(200).send(reviews);
     }
     if (rating) {
-      const findUser = await User.find();
-      const findReview = await Review.find();
-      const data = [];
-      findReview.map((item) => {
-        const review = [];
-        item.reviews &&
-          item.reviews.map((item2) => {
-            if (item2.rating == parseInt(rating)) {
-              review.push(item2);
-            }
-          });
-        item.reviews = review;
-        let userData = null;
-        findUser.map((user) => {
-          if (item.createdBy == JSON.stringify(user?._id)?.split('"')[1]) {
-            userData = {
-              email: user?.email,
-              name: user?.name,
-              profilePicture: user?.profilePicture,
-              userType: user?.userType,
-              isDeleted: user?.isDeleted,
-              createdAt: user?.createdAt,
-              updatedAt: user?.updatedAt,
-            };
-          }
-        });
-        if (userData !== null) {
-          item.createdBy = JSON.stringify(userData);
-          data.push(item);
-        }
-      });
-      return res.send(data);
+      const reviews = await Review.find({ rating: rating })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+
+      return res.status(200).send(reviews);
     }
     if (name) {
       const findUser = await User.findOne(filter);
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = {
-        createdBy: findUser?.uId ? findUser.uId : findUser?._id,
-      };
-      const findReviews = await Review.find(reviewFilter);
-      const data = [];
-      findReviews.map((item) => {
-        item.createdBy = JSON.stringify(userData);
-        data.push(item);
-      });
-      return res.send(data);
+      const reviews = await Review.find({ createdBy: findUser })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+
+      return res.status(200).send(reviews);
     }
     if (email) {
       const findUser = await User.findOne(filter);
-      const userData = {
-        email: findUser?.email,
-        name: findUser?.name,
-        profilePicture: findUser?.profilePicture,
-        userType: findUser?.userType,
-        isDeleted: findUser?.isDeleted,
-        createdAt: findUser?.createdAt,
-        updatedAt: findUser?.updatedAt,
-      };
-      const reviewFilter = { email: findUser.email };
-      const findReviews = await Review.find(reviewFilter);
-      if (findReviews.length === 0) {
-        return res.status(404).send({ message: `Reviews not found` });
-      }
-      const data = [];
-      findReviews.map((item) => {
-        item.createdBy = JSON.stringify(userData);
-        data.push(item);
-      });
-      return res.send(data);
+      const reviews = await Review.find({ createdBy: findUser })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+
+      return res.status(200).send(reviews);
     }
     if (!(name && email && startDate && endDate && rating)) {
-      const findUser = await User.find();
-      const reviews = await Review.find();
-      const data = [];
-      reviews.map((review) => {
-        let userData = null;
-        findUser.map((user) => {
-          if (review.createdBy == JSON.stringify(user?._id)?.split('"')[1]) {
-            userData = {
-              email: user?.email,
-              name: user?.name,
-              profilePicture: user?.profilePicture,
-              userType: user?.userType,
-              isDeleted: user?.isDeleted,
-              createdAt: user.createdAt,
-              updatedAt: user?.updatedAt,
-            };
-          }
-        });
-        if (userData !== null) {
-          review.createdBy = JSON.stringify(userData);
-          data.push(review);
-        }
-      });
-      if (reviews.length === 0) {
-        return res.status(404).send({ message: `Reviews not found` });
-      }
-      return res.send(data);
+      const reviews = await Review.find()
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "user",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
     }
     return res.status(404).send({ message: `No matching results found` });
   } catch (error) {
@@ -599,6 +499,28 @@ const resetPass = async (req, res) => {
   }
 };
 
+const reviewReply = async (req, res) => {
+  try {
+    const { createdBy, description } = req.body;
+    const review = await Review.findByIdAndUpdate(
+      req.params.id,
+      {
+        $push: { replies: { createdBy, description, date: new Date() } },
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    res.status(201).json({ message: "Reply added successfully", review });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -611,4 +533,5 @@ module.exports = {
   searchReviews,
   forgotPass,
   resetPass,
+  reviewReply,
 };
