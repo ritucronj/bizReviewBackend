@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const paypal = require("paypal-rest-sdk");
 require("dotenv").config();
+const serverAddr = process.env.SERVER_ADDR;
 
 paypal.configure({
   mode: "sandbox",
@@ -41,8 +42,8 @@ router.get("/subscribe/:plan", function (req, res) {
       },
     ],
     merchant_preferences: {
-      cancel_url: "http://localhost:3000/cancel",
-      return_url: "http://localhost:3000/success",
+      cancel_url: `${serverAddr}/cancel`,
+      return_url: `${serverAddr}/success`,
       auto_bill_amount: "YES",
       initial_fail_amount_action: "CONTINUE",
       max_fail_attempts: "0",
