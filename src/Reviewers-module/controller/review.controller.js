@@ -82,9 +82,10 @@ const readAllReviews = async (req, res) => {
     // Find all reviews from the database and populate their replies
     const reviews = await review
       .find({isDeleted: false})
+      .sort({ createdAt: -1 })
       .populate("createdBy")
       .populate("businessId");
-    console.log(reviews);
+
     // Return the reviews as the response
     res.status(200).json(reviews);
   } catch (err) {
