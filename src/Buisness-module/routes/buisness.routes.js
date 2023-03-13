@@ -13,7 +13,8 @@ const {
   forgotPass,
   resetPass,
   reviewReply,
-  getAllBusiness
+  getAllBusiness,
+  searchBusiness
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -32,6 +33,8 @@ router.post("/business/google", ssoSignBuisness);
 router.put("/business/:id", updateBusinessProfile);
 
 router.get('/getAllBusiness',getAllBusiness)
+
+router.get('/searchBusinessWithReviews',searchBusiness)
 
 router.delete("/business/:id", deleteBusiness);
 

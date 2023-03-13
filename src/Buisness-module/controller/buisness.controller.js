@@ -164,6 +164,38 @@ const getAllBusiness = async (req, res) => {
   }
 };
 
+const searchBusiness= async (req, res) => {
+  const search = req.query.search; // the search query parameter
+
+  try {
+    const businesses = await Business.aggregate([
+      {
+        $match: {
+          $or: [
+            { companyName: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { website: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'reviews', // the name of the Review collection
+          localField: '_id',
+          foreignField: 'businessId',
+          as: 'reviews'
+        }
+      }
+    ]);
+
+    res.status(200).send(businesses)
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
 
 const getBusiness = async (req, res) => {
   try {
@@ -550,4 +582,5 @@ module.exports = {
   forgotPass,
   resetPass,
   reviewReply,
+  searchBusiness
 };
