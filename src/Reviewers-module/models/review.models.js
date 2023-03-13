@@ -46,7 +46,7 @@ const reviews = new mongoose.Schema(
         },
         createdBy: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: "Business",
           required: true,
         },
         date: {

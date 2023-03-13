@@ -3,7 +3,8 @@ const {
   createCompanyReview,
  readAllReviews,
  readAllReviewsByUser,
- updateCompanyReview
+ updateCompanyReview,
+ searchAllReviewsByUser
 } = require("../controller/review.controller");
 const router = express.Router();
 const review = require("../models/review.models");
@@ -18,6 +19,7 @@ router.post("/createCompanyReview/:Id/:businessId", createCompanyReview);
 // router.get("/getReviewById/:review/:user", readReviewById);
 router.get("/getAllReviews", readAllReviews);
 router.get("/getAllReviewsByUser/:userId", readAllReviewsByUser);
+router.get("/searchAllReviewsByUser/:userId", searchAllReviewsByUser);
 router.put("/updateReview/:reviewId", updateCompanyReview);
 // router.get("/recentReviews/:Id", recentReviews);
 // router.delete("/deleteReviewById/:review/:user", deleteReviewById);

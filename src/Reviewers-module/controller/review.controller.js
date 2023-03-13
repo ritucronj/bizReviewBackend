@@ -3,6 +3,7 @@ const user = require("../models/user.models");
 const { statusCodes } = require("../services/statusCodes");
 const { updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require("uuid");
+const businessModel=require('../../Buisness-module/models/business.model')
 
 const createCompanyReview = async (req, res) => {
   try {
@@ -98,6 +99,39 @@ const readAllReviewsByUser=async(req,res)=>{
   const userId = req.params.userId;
   try {
     const reviews = await review.find({ createdBy: userId,isDeleted: false }).populate("businessId").populate("createdBy");
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+const searchAllReviewsByUser=async(req,res)=>{
+  const userId = req.params.userId;
+  const { fromDate, toDate, search, rating } = req.query;
+  const filters = { createdBy: userId, isDeleted: false };
+  if (fromDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
+  if (toDate) {
+    if (!filters.dateOfExperience) filters.dateOfExperience = {};
+    filters.dateOfExperience["$lte"] = new Date(toDate);
+  }
+  if (search) {
+    const regex = new RegExp(search, "i");
+    const findBusiness = await businessModel.findOne({$or : [
+      { companyName: regex },
+      { email: regex },
+      { website: regex },
+    ] });
+
+
+    filters.businessId=findBusiness._id.toString()
+  }
+  if (rating) filters.rating = { $gte: Number(rating) };
+  try {
+    console.log('filters',filters)
+    const reviews = await review.find(filters)
+    .populate("businessId")
+    .populate('createdBy');
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
@@ -329,6 +363,7 @@ module.exports = {
   // readReviewById,
   readAllReviews,
   readAllReviewsByUser,
+  searchAllReviewsByUser,
   // recentReviews,
   updateCompanyReview
   // deleteReviewById,
