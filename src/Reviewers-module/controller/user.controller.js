@@ -59,7 +59,7 @@ const registerUserWithEmail = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const data = await user.find();
+    const data = await user.find({isDeleted:false});
     return res.send(data);
   } catch (error) {
     console.log(error);

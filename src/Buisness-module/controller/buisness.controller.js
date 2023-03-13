@@ -151,6 +151,20 @@ const loginBusiness = async (req, res) => {
   }
 };
 
+const getAllBusiness = async (req, res) => {
+  try {
+    const businessData = await Business.find({ isDeleted:false });
+
+    if (!businessData) {
+      return res.status(404).send({ message: `User not found.` });
+    }
+    return res.status(200).send({ businessData });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+
 const getBusiness = async (req, res) => {
   try {
     const id = req.params.id;
@@ -527,6 +541,7 @@ module.exports = {
   loginBusiness,
   verifyEmail,
   setBusinessPassword,
+  getAllBusiness,
   getBusiness,
   ssoSignBuisness,
   updateBusinessProfile,
