@@ -34,7 +34,7 @@ router.put("/business/:id", updateBusinessProfile);
 
 router.get('/getAllBusiness',getAllBusiness)
 
-router.get('/searchBusiness',searchBusiness)
+router.get('/searchBusinessWithReviews',searchBusiness)
 
 router.delete("/business/:id", deleteBusiness);
 
