@@ -14,7 +14,8 @@ const {
   resetPass,
   reviewReply,
   getAllBusiness,
-  searchBusiness
+  searchBusiness,
+  searchBusinessWithReviews
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -34,7 +35,11 @@ router.put("/business/:id", updateBusinessProfile);
 
 router.get('/getAllBusiness',getAllBusiness)
 
-router.get('/searchBusinessWithReviews',searchBusiness)
+router.get('/searchBusiness',searchBusiness)
+
+router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
+
+router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
 router.delete("/business/:id", deleteBusiness);
 
