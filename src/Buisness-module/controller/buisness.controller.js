@@ -224,7 +224,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -240,7 +240,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -260,7 +260,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -276,7 +276,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -295,7 +295,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -311,7 +311,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -330,7 +330,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -346,7 +346,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -362,7 +362,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -387,7 +387,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -401,7 +401,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -416,7 +416,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -431,7 +431,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
@@ -445,7 +445,7 @@ const searchReviews = async (req, res) => {
           path: "replies",
           populate: {
             path: "createdBy",
-            model: "user",
+            model: "Business",
           },
         })
         .populate("createdBy");
