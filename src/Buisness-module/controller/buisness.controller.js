@@ -168,6 +168,24 @@ const searchBusiness= async (req, res) => {
   const search = req.query.search; // the search query parameter
 
   try {
+    const results = await Business.find({
+      $or: [
+        { email: { $regex: new RegExp(search, 'i') } },
+        { firstName: { $regex: new RegExp(search, 'i') } },
+      ]
+    }).exec();
+
+    res.status(200).json(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const searchBusinessWithReviews= async (req, res) => {
+  const search = req.query.search; // the search query parameter
+
+  try {
     const businesses = await Business.aggregate([
       {
         $match: {
@@ -582,5 +600,6 @@ module.exports = {
   forgotPass,
   resetPass,
   reviewReply,
-  searchBusiness
+  searchBusiness,
+  searchBusinessWithReviews
 };
