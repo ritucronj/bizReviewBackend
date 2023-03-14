@@ -78,14 +78,27 @@ const ssoSignBuisness = async (req, res) => {
             const token = jwtGenerate(payload, "secret", {
               expiresIn: "24H",
             });
+           if(data.isApproved){
             return res
-              .status(statusCodes[201].value)
-              .send({ data: data, token: token });
+            .status(statusCodes[201].value)
+            .send({ data: data, token: token });
+           }else{
+            return res
+            .status(statusCodes[201].value)
+            .send({ data: data, message:'Not approved' });
+           }
           })
           .catch((dataArr) => {
+            console.log('data',dataArr[0])
+           if(dataArr[0].isApproved){
             return res
-              .status(statusCodes[200].value)
-              .send({ data: dataArr[0], token: dataArr[1] });
+            .status(statusCodes[200].value)
+            .send({ data: dataArr[0], token: dataArr[1] });
+           }else{
+            return res
+            .status(statusCodes[200].value)
+            .send({ data: dataArr[0], message:'Not approved' });
+           }
           });
       } else {
         return res
@@ -140,8 +153,11 @@ const loginBusiness = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const isPasswordValid = await bcrypt.compare(password, userData.password);
-    if (!isPasswordValid) {
+    if (!isPasswordValid ) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+    if( !userData.isApproved){
+      return res.json({ data: userData,message:'Not Approved' });
     }
     const token = jwt.sign({ _id: userData._id }, process.env.JWT_SECRET);
     return res.json({ token: token, data: userData });
@@ -150,6 +166,79 @@ const loginBusiness = async (req, res) => {
     return res.status(500).send({ messgae: `Internal Server Error` });
   }
 };
+
+const getAllBusiness = async (req, res) => {
+  try {
+    const businessData = await Business.find({ isDeleted:false });
+
+    if (!businessData) {
+      return res.status(404).send({ message: `User not found.` });
+    }
+    return res.status(200).send({ businessData });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+const searchBusinessRequests= async (req, res) => {
+  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+
+  try {
+    const businesses = await Business.find({
+      $and: [
+        { isDeleted: false },
+        { isApproved: false },
+        { rejected: false },
+        {
+          $or: [
+            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ],
+        },
+      ],
+    })
+      .skip((page - 1) * limit) // calculate the number of documents to skip
+      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+
+    res.status(200).json(businesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const searchBusinessWithReviews= async (req, res) => {
+  const search = req.query.search; // the search query parameter
+
+  try {
+    const businesses = await Business.aggregate([
+      {
+        $match: {
+          $or: [
+            { companyName: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { website: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'reviews', // the name of the Review collection
+          localField: '_id',
+          foreignField: 'businessId',
+          as: 'reviews'
+        }
+      }
+    ]);
+
+    res.status(200).send(businesses)
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
 
 const getBusiness = async (req, res) => {
   try {
@@ -189,22 +278,55 @@ const updateBusinessProfile = async (req, res) => {
   }
 };
 
-const deleteBusiness = async (req, res) => {
+const deleteBusinessPermanently = async (req, res) => {
   try {
-    const id = req.params.id;
-    const checkUser = await Business.findOne({ uId: id });
-    if (!checkUser || checkUser.isDeleted === true) {
-      return res.status(404).send({ message: `User not found.` });
-    }
-    const deleteProfile = await Business.findOneAndUpdate(
-      { uId: id },
-      { $set: { isDeleted: true } },
-      { new: true }
-    );
-    return res.send({ message: `Account deleted successfully.` });
+    const business = await Business.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    res.status(200).json(business);
   } catch (error) {
-    console.log(error);
-    return res.status(500).send({ messgae: `Internal Server Error` });
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+const deleteMultipleBusinessPermanently = async (req, res) => {
+  const { ids } = req.query;
+  try {
+    const result = await Business.updateMany(
+      { _id: { $in: ids } },
+      { isDeleted: true }
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+
+const deleteBusinessTemporarily = async (req, res) => {
+  try {
+    const business = await Business.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
+    res.status(200).json(business);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+const updateBusinessStatus = async (req, res) => {
+  const { approved,rejected } = req.query;
+  try {
+   if(approved){
+    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
+    res.status(200).json(business);
+   }
+   if(rejected){
+    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
+    res.status(200).json(business);
+   }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
   }
 };
 
@@ -527,12 +649,18 @@ module.exports = {
   loginBusiness,
   verifyEmail,
   setBusinessPassword,
+  getAllBusiness,
   getBusiness,
   ssoSignBuisness,
   updateBusinessProfile,
-  deleteBusiness,
+  deleteBusinessPermanently,
+  deleteMultipleBusinessPermanently,
+  deleteBusinessTemporarily,
+  updateBusinessStatus,
   searchReviews,
   forgotPass,
   resetPass,
   reviewReply,
+  searchBusinessRequests,
+  searchBusinessWithReviews
 };
