@@ -18,6 +18,7 @@ const {
   reviewReply,
   getAllBusiness,
   searchBusinessRequests,
+  searchApprovedBusiness,
   searchBusinessWithReviews
 } = require("../controller/buisness.controller");
 const router = express.Router();
@@ -39,6 +40,8 @@ router.put("/business/:id", updateBusinessProfile);
 router.get('/getAllBusiness',getAllBusiness)
 
 router.get('/searchBusinessRequests',searchBusinessRequests)
+
+router.get('/searchApprovedBusinesses',searchApprovedBusiness)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
