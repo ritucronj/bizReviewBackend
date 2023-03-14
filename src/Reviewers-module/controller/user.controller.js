@@ -1,5 +1,6 @@
 const user = require("../models/user.models");
 const review = require("../models/review.models");
+const Business = require("../../Buisness-module/models/business.model");
 const {
   userRegistrationValidation,
   ssoRegistrationValidation,
@@ -219,9 +220,171 @@ const deleteUserProfile = async (req, res) => {
   }
 };
 
+const filterUser = async (req, res) => {
+  try {
+    const { fromdate, todate, searchtext, usertype } = req.query;
+    let results = [];
+    if (fromdate && todate && searchtext) {
+      if (searchtext.includes("@")) {
+        if (usertype === "reviewer") {
+          results = await user.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { email: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+        } else if (usertype === "business") {
+          results = await Business.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { email: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+        } else {
+          const reviewerResults = await user.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { email: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+          const businessResults = await Business.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { email: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+          results = reviewerResults.concat(businessResults);
+        }
+      } else {
+        if (usertype === "reviewer") {
+          results = await user.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { name: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+        } else if (usertype === "business") {
+          results = await Business.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { name: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+        } else {
+          const reviewerResults = await user.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { name: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+          const businessResults = await Business.find({
+            $and: [
+              {
+                createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+              },
+              { name: { $regex: searchtext, $options: "i" } },
+            ],
+          });
+          results = reviewerResults.concat(businessResults);
+        }
+      }
+      return res.status(200).send(results);
+    }
+    if (!(fromdate && todate) && searchtext) {
+      if (searchtext.includes("@")) {
+        if (usertype === "reviewer") {
+          results = await user.find({
+            email: { $regex: searchtext, $options: "i" },
+          });
+        } else if (usertype === "business") {
+          results = await Business.find({
+            email: { $regex: searchtext, $options: "i" },
+          });
+        } else {
+          const reviewerResults = await user.find({
+            email: { $regex: searchtext, $options: "i" },
+          });
+          const businessResults = await Business.find({
+            email: { $regex: searchtext, $options: "i" },
+          });
+          results = reviewerResults.concat(businessResults);
+        }
+      } else {
+        if (usertype === "reviewer") {
+          results = await user.find({
+            name: { $regex: searchtext, $options: "i" },
+          });
+        } else if (usertype === "business") {
+          results = await Business.find({
+            name: { $regex: searchtext, $options: "i" },
+          });
+        } else {
+          const reviewerResults = await user.find({
+            name: { $regex: searchtext, $options: "i" },
+          });
+          const businessResults = await Business.find({
+            name: { $regex: searchtext, $options: "i" },
+          });
+          results = reviewerResults.concat(businessResults);
+        }
+      }
+      return res.status(200).send(results);
+    }
+    if (fromdate && todate && !searchtext) {
+      if (usertype === "reviewer") {
+        results = await user.find({
+          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+        });
+      } else if (usertype === "business") {
+        results = await Business.find({
+          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+        });
+      } else {
+        const reviewerResults = await user.find({
+          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+        });
+        const businessResults = await Business.find({
+          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+        });
+        results = reviewerResults.concat(businessResults);
+      }
+      return res.status(200).send(results);
+    }
+    if (!(fromdate && todate && searchtext)) {
+      if (usertype === "reviewer") {
+        results = await user.find({});
+      } else if (usertype === "business") {
+        results = await Business.find({});
+      } else {
+        const reviewerResults = await user.find({});
+        const businessResults = await Business.find({});
+        results = reviewerResults.concat(businessResults);
+      }
+      return res.status(200).send(results);
+    }
+  } catch (error) {
+    return res.status(statusCodes[500].value).send({ msg: error.message });
+  }
+};
+
 module.exports = {
   registerUserWithEmail,
   getAllUsers,
   ssoRegisterAndLogin,
   updateUserProfile,
+  filterUser,
 };

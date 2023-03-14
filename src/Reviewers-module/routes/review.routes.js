@@ -1,9 +1,9 @@
 const express = require("express");
 const {
   createCompanyReview,
- readAllReviews,
- readAllReviewsByUser,
- updateCompanyReview
+  readAllReviews,
+  readAllReviewsByUser,
+  updateCompanyReview,
 } = require("../controller/review.controller");
 const router = express.Router();
 const review = require("../models/review.models");
