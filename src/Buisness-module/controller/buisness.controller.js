@@ -78,14 +78,27 @@ const ssoSignBuisness = async (req, res) => {
             const token = jwtGenerate(payload, "secret", {
               expiresIn: "24H",
             });
+           if(data.isApproved){
             return res
-              .status(statusCodes[201].value)
-              .send({ data: data, token: token });
+            .status(statusCodes[201].value)
+            .send({ data: data, token: token });
+           }else{
+            return res
+            .status(statusCodes[201].value)
+            .send({ data: data, message:'Not approved' });
+           }
           })
           .catch((dataArr) => {
+            console.log('data',dataArr[0])
+           if(dataArr[0].isApproved){
             return res
-              .status(statusCodes[200].value)
-              .send({ data: dataArr[0], token: dataArr[1] });
+            .status(statusCodes[200].value)
+            .send({ data: dataArr[0], token: dataArr[1] });
+           }else{
+            return res
+            .status(statusCodes[200].value)
+            .send({ data: dataArr[0], message:'Not approved' });
+           }
           });
       } else {
         return res
@@ -140,8 +153,11 @@ const loginBusiness = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const isPasswordValid = await bcrypt.compare(password, userData.password);
-    if (!isPasswordValid) {
+    if (!isPasswordValid ) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+    if( !userData.isApproved){
+      return res.json({ data: userData,message:'Not Approved' });
     }
     const token = jwt.sign({ _id: userData._id }, process.env.JWT_SECRET);
     return res.json({ token: token, data: userData });
