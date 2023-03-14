@@ -19,11 +19,14 @@ const {
   getAllBusiness,
   searchBusinessRequests,
   searchApprovedBusiness,
-  searchBusinessWithReviews
+  searchBusinessWithReviews,
+  createBusinessByUser
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
 router.post("/business", createBusiness);
+
+router.post("/createBusinessByUser/:userId", createBusinessByUser);
 
 router.get("/verify-email", verifyEmail);
 
