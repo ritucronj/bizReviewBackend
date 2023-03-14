@@ -23,6 +23,7 @@ require("dotenv").config();
 const {
   updateReviewValidation,
 } = require("../../Reviewers-module/services/Validation-handler");
+const { request } = require("express");
 const createBusiness = async (req, res) => {
   try {
     const { error } = createBusinessValidation(req.body);
@@ -40,6 +41,25 @@ const createBusiness = async (req, res) => {
     return res.send({ createData });
   } catch (error) {
     return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+const createBusinessByUser = async (req, res) => {
+  try {
+    req.body.uId = uuidv4();
+    req.body.createdByUser=true;
+    req.body.createdBy= req.params.userId;
+    // Create a new business object with the request body
+    const business = new Business(req.body);
+    
+    // Save the business object to the database
+    const savedBusiness = await business.save();
+    
+    // Send the saved business object in the response
+    res.status(201).json(savedBusiness);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 };
 
@@ -690,5 +710,6 @@ module.exports = {
   reviewReply,
   searchBusinessRequests,
   searchApprovedBusiness,
-  searchBusinessWithReviews
+  searchBusinessWithReviews,
+  createBusinessByUser
 };
