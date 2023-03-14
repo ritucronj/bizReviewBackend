@@ -180,14 +180,14 @@ const getAllBusiness = async (req, res) => {
   }
 };
 
-const searchBusiness= async (req, res) => {
+const searchBusinessRequests= async (req, res) => {
   const { search, page, limit } = req.query; // the search query parameter and pagination parameters
 
   try {
     const businesses = await Business.find({
       $and: [
         { isDeleted: false },
-        { isApproved: true },
+        { isApproved: false },
         { rejected: false },
         {
           $or: [
@@ -661,6 +661,6 @@ module.exports = {
   forgotPass,
   resetPass,
   reviewReply,
-  searchBusiness,
+  searchBusinessRequests,
   searchBusinessWithReviews
 };
