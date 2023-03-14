@@ -39,8 +39,6 @@ router.get('/searchBusiness',searchBusiness)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
-router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
-
 router.delete("/business/:id", deleteBusiness);
 
 router.get("/review-search", searchReviews);

@@ -181,17 +181,19 @@ const getAllBusiness = async (req, res) => {
 };
 
 const searchBusiness= async (req, res) => {
-  const search = req.query.search; // the search query parameter
+  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
 
   try {
-    const results = await Business.find({
+    const businesses = await Business.find({
       $or: [
-        { email: { $regex: new RegExp(search, 'i') } },
-        { firstName: { $regex: new RegExp(search, 'i') } },
+        { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+        { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
       ]
-    }).exec();
+    })
+      .skip((page - 1) * limit) // calculate the number of documents to skip
+      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
 
-    res.status(200).json(results);
+    res.status(200).json(businesses);
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
