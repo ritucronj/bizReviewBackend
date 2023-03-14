@@ -185,10 +185,17 @@ const searchBusiness= async (req, res) => {
 
   try {
     const businesses = await Business.find({
-      $or: [
-        { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-        { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
-      ]
+      $and: [
+        { isDeleted: false },
+        { isApproved: true },
+        { rejected: false },
+        {
+          $or: [
+            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ],
+        },
+      ],
     })
       .skip((page - 1) * limit) // calculate the number of documents to skip
       .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
@@ -271,22 +278,55 @@ const updateBusinessProfile = async (req, res) => {
   }
 };
 
-const deleteBusiness = async (req, res) => {
+const deleteBusinessPermanently = async (req, res) => {
   try {
-    const id = req.params.id;
-    const checkUser = await Business.findOne({ uId: id });
-    if (!checkUser || checkUser.isDeleted === true) {
-      return res.status(404).send({ message: `User not found.` });
-    }
-    const deleteProfile = await Business.findOneAndUpdate(
-      { uId: id },
-      { $set: { isDeleted: true } },
-      { new: true }
-    );
-    return res.send({ message: `Account deleted successfully.` });
+    const business = await Business.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+    res.status(200).json(business);
   } catch (error) {
-    console.log(error);
-    return res.status(500).send({ messgae: `Internal Server Error` });
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+const deleteMultipleBusinessPermanently = async (req, res) => {
+  const { ids } = req.query;
+  try {
+    const result = await Business.updateMany(
+      { _id: { $in: ids } },
+      { isDeleted: true }
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+
+const deleteBusinessTemporarily = async (req, res) => {
+  try {
+    const business = await Business.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
+    res.status(200).json(business);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+const updateBusinessStatus = async (req, res) => {
+  const { approved,rejected } = req.query;
+  try {
+   if(approved){
+    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
+    res.status(200).json(business);
+   }
+   if(rejected){
+    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
+    res.status(200).json(business);
+   }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
   }
 };
 
@@ -613,7 +653,10 @@ module.exports = {
   getBusiness,
   ssoSignBuisness,
   updateBusinessProfile,
-  deleteBusiness,
+  deleteBusinessPermanently,
+  deleteMultipleBusinessPermanently,
+  deleteBusinessTemporarily,
+  updateBusinessStatus,
   searchReviews,
   forgotPass,
   resetPass,

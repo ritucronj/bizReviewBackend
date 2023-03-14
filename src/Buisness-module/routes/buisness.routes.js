@@ -8,7 +8,10 @@ const {
   getBusiness,
   ssoSignBuisness,
   updateBusinessProfile,
-  deleteBusiness,
+  deleteBusinessPermanently,
+  deleteMultipleBusinessPermanently,
+  deleteBusinessTemporarily,
+  updateBusinessStatus,
   searchReviews,
   forgotPass,
   resetPass,
@@ -39,7 +42,13 @@ router.get('/searchBusiness',searchBusiness)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
-router.delete("/business/:id", deleteBusiness);
+router.put("/deleteBusinessPermanently/:id", deleteBusinessPermanently);
+
+router.put("/deleteMultipleBusinessPermanently", deleteMultipleBusinessPermanently);
+
+router.put("/deleteBusinessTemporarily/:id", deleteBusinessTemporarily);
+
+router.put("/updateBusinessStatus/:id", updateBusinessStatus);
 
 router.get("/review-search", searchReviews);
 
