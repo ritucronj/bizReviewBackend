@@ -118,6 +118,16 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ['active','inactive'],
+      required: true,
+      default:'inactive'
+    },
+    rejected: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

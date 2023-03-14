@@ -8,13 +8,16 @@ const {
   getBusiness,
   ssoSignBuisness,
   updateBusinessProfile,
-  deleteBusiness,
+  deleteBusinessPermanently,
+  deleteMultipleBusinessPermanently,
+  deleteBusinessTemporarily,
+  updateBusinessStatus,
   searchReviews,
   forgotPass,
   resetPass,
   reviewReply,
   getAllBusiness,
-  searchBusiness,
+  searchBusinessRequests,
   searchBusinessWithReviews
 } = require("../controller/buisness.controller");
 const router = express.Router();
@@ -35,11 +38,17 @@ router.put("/business/:id", updateBusinessProfile);
 
 router.get('/getAllBusiness',getAllBusiness)
 
-router.get('/searchBusiness',searchBusiness)
+router.get('/searchBusinessRequests',searchBusinessRequests)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
-router.delete("/business/:id", deleteBusiness);
+router.put("/deleteBusinessPermanently/:id", deleteBusinessPermanently);
+
+router.put("/deleteMultipleBusinessPermanently", deleteMultipleBusinessPermanently);
+
+router.put("/deleteBusinessTemporarily/:id", deleteBusinessTemporarily);
+
+router.put("/updateBusinessStatus/:id", updateBusinessStatus);
 
 router.get("/review-search", searchReviews);
 
