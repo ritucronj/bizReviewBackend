@@ -5,6 +5,8 @@ const {
   ssoRegisterAndLogin,
   updateUserProfile,
   filterUser,
+  deleteSingleUser,
+  deleteMultipleUser,
 } = require("../controller/user.controller");
 const router = express.Router();
 
@@ -17,5 +19,7 @@ router.post("/registerSSO", ssoRegisterAndLogin);
 router.get("/getAll", getAllUsers);
 router.put("/updateProfile/:Id", updateUserProfile);
 router.get("/getUser", filterUser);
+router.put("/deleteuser/:id", deleteSingleUser);
+router.put("/deleteusers", deleteMultipleUser);
 
 module.exports = router;

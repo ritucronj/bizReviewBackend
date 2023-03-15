@@ -60,7 +60,7 @@ const registerUserWithEmail = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const data = await user.find({isDeleted:false});
+    const data = await user.find({ isDeleted: false });
     return res.send(data);
   } catch (error) {
     console.log(error);
@@ -233,6 +233,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
         } else if (usertype === "business") {
@@ -242,6 +243,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
         } else {
@@ -251,6 +253,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
           const businessResults = await Business.find({
@@ -259,6 +262,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
           results = reviewerResults.concat(businessResults);
@@ -271,6 +275,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
         } else if (usertype === "business") {
@@ -280,6 +285,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
         } else {
@@ -289,6 +295,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
           const businessResults = await Business.find({
@@ -297,6 +304,7 @@ const filterUser = async (req, res) => {
                 createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
               },
               { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
             ],
           });
           results = reviewerResults.concat(businessResults);
@@ -308,36 +316,60 @@ const filterUser = async (req, res) => {
       if (searchtext.includes("@")) {
         if (usertype === "reviewer") {
           results = await user.find({
-            email: { $regex: searchtext, $options: "i" },
+            $and: [
+              { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
         } else if (usertype === "business") {
           results = await Business.find({
-            email: { $regex: searchtext, $options: "i" },
+            $and: [
+              { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
         } else {
           const reviewerResults = await user.find({
-            email: { $regex: searchtext, $options: "i" },
+            $and: [
+              { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
           const businessResults = await Business.find({
-            email: { $regex: searchtext, $options: "i" },
+            $and: [
+              { email: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
           results = reviewerResults.concat(businessResults);
         }
       } else {
         if (usertype === "reviewer") {
           results = await user.find({
-            name: { $regex: searchtext, $options: "i" },
+            $and: [
+              { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
         } else if (usertype === "business") {
           results = await Business.find({
-            name: { $regex: searchtext, $options: "i" },
+            $and: [
+              { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
         } else {
           const reviewerResults = await user.find({
-            name: { $regex: searchtext, $options: "i" },
+            $and: [
+              { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
           const businessResults = await Business.find({
-            name: { $regex: searchtext, $options: "i" },
+            $and: [
+              { name: { $regex: searchtext, $options: "i" } },
+              { isDeleted: false },
+            ],
           });
           results = reviewerResults.concat(businessResults);
         }
@@ -347,18 +379,30 @@ const filterUser = async (req, res) => {
     if (fromdate && todate && !searchtext) {
       if (usertype === "reviewer") {
         results = await user.find({
-          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+          $and: [
+            { createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) } },
+            { isDeleted: false },
+          ],
         });
       } else if (usertype === "business") {
         results = await Business.find({
-          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+          $and: [
+            { createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) } },
+            { isDeleted: false },
+          ],
         });
       } else {
         const reviewerResults = await user.find({
-          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+          $and: [
+            { createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) } },
+            { isDeleted: false },
+          ],
         });
         const businessResults = await Business.find({
-          createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) },
+          $and: [
+            { createdAt: { $gte: new Date(fromdate), $lte: new Date(todate) } },
+            { isDeleted: false },
+          ],
         });
         results = reviewerResults.concat(businessResults);
       }
@@ -366,16 +410,87 @@ const filterUser = async (req, res) => {
     }
     if (!(fromdate && todate && searchtext)) {
       if (usertype === "reviewer") {
-        results = await user.find({});
+        results = await user.find({ isDeleted: false });
       } else if (usertype === "business") {
-        results = await Business.find({});
+        results = await Business.find({ isDeleted: false });
       } else {
-        const reviewerResults = await user.find({});
-        const businessResults = await Business.find({});
+        const reviewerResults = await user.find({ isDeleted: false });
+        const businessResults = await Business.find({ isDeleted: false });
         results = reviewerResults.concat(businessResults);
       }
       return res.status(200).send(results);
     }
+  } catch (error) {
+    return res.status(statusCodes[500].value).send({ msg: error.message });
+  }
+};
+
+const deleteSingleUser = async (req, res) => {
+  try {
+    let userId = req.params.id;
+    let userType = req.body.userType;
+    let result = null;
+    if (userType && userType.toLowerCase() === "reviewer") {
+      const findUser = await user.findOneAndUpdate(
+        { _id: userId },
+        { isDeleted: true },
+        {
+          new: true,
+        }
+      );
+      result = findUser;
+    }
+    if (userType && userType.toLowerCase() === "business") {
+      const findUser = await Business.findOneAndUpdate(
+        { _id: userId },
+        { isDeleted: true },
+        {
+          new: true,
+        }
+      );
+      result = findUser;
+    }
+    return res.status(200).send(result);
+  } catch (error) {
+    return res.status(statusCodes[500].value).send({ msg: error.message });
+  }
+};
+const deleteMultipleUser = async (req, res) => {
+  try {
+    let users = req.body.usersList;
+    let result = null;
+    let businessIds = [];
+    let reviewerIds = [];
+    if (users && users.length > 0) {
+      users.map(async (item) => {
+        let userId = item.id;
+        if (item?.userType && item?.userType.toLowerCase() === "reviewer") {
+          reviewerIds.push(item.id);
+        }
+        if (
+          item?.userType &&
+          item?.item.userType.toLowerCase() === "business"
+        ) {
+          businessIds.push(item.id);
+        }
+      });
+    }
+    if (businessIds.length) {
+      const result = await Business.updateMany(
+        { _id: { $in: businessIds } },
+        { isDeleted: false }
+      );
+      return res.status(200).json(result);
+    }
+    if (reviewerIds.length) {
+      const result = await user.updateMany(
+        { _id: { $in: reviewerIds } },
+        { isDeleted: true }
+      );
+      return res.status(200).json(result);
+    }
+
+    return res.status(200).send({ msg: "Users Deleted Successfully" });
   } catch (error) {
     return res.status(statusCodes[500].value).send({ msg: error.message });
   }
@@ -387,4 +502,6 @@ module.exports = {
   ssoRegisterAndLogin,
   updateUserProfile,
   filterUser,
+  deleteSingleUser,
+  deleteMultipleUser,
 };
