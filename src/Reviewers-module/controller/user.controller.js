@@ -463,14 +463,11 @@ const deleteMultipleUser = async (req, res) => {
     let reviewerIds = [];
     if (users && users.length > 0) {
       users.map(async (item) => {
-        let userId = item.id;
+        // let userId = item.id;
         if (item?.userType && item?.userType.toLowerCase() === "reviewer") {
           reviewerIds.push(item.id);
         }
-        if (
-          item?.userType &&
-          item?.item.userType.toLowerCase() === "business"
-        ) {
+        if (item?.userType && item?.userType.toLowerCase() === "buisness") {
           businessIds.push(item.id);
         }
       });
@@ -478,7 +475,7 @@ const deleteMultipleUser = async (req, res) => {
     if (businessIds.length) {
       const result = await Business.updateMany(
         { _id: { $in: businessIds } },
-        { isDeleted: false }
+        { isDeleted: true }
       );
       return res.status(200).json(result);
     }
