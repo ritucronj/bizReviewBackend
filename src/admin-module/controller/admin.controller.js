@@ -25,7 +25,7 @@ const adminLogin = async (req, res) => {
         return new Promise(async (resolve, reject) => {
             const { error } = adminLoginValidation(req.body);
             if (error) reject(new Error(error.details[0].message));
-            resolve(await admin.findOne({ email: req.body.email }));
+            resolve(await admin.findOne({ email: req.body.email,status:'active' }));
         })
             .then((data) => {
                 const error = data === null ? true : false;
@@ -48,7 +48,23 @@ const adminLogin = async (req, res) => {
     }
 }
 
+const updateAdmin= (req, res) => {
+    const id = req.params.id;
+    const adminData = req.body;
+  
+    // Find admin by ID and update their details
+    admin.findByIdAndUpdate(id, adminData, { new: true })
+      .then(updatedAdmin => {
+        res.status(200).send(updatedAdmin);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).send({ error: 'Could not update admin' });
+      });
+  }
+
 module.exports = {
     adminRegister,
-    adminLogin
+    adminLogin,
+    updateAdmin
 }

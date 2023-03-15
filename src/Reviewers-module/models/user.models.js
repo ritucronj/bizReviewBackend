@@ -34,7 +34,13 @@ const user = new mongoose.Schema({
     isEmailVerified:{
         type: Boolean,
         default: false 
-    }
+    },
+    status: {
+        type: String,
+        enum: ['active','inactive'],
+        required: true,
+        default:'inactive'
+      },
 }, { timestamps: true });
 
 module.exports = mongoose.model("user", user);

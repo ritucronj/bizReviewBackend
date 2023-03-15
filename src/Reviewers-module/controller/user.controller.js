@@ -33,23 +33,23 @@ const registerUserWithEmail = async (req, res) => {
     });
     checkUnique
       .then(async () => {
-        if (data.code != 0000) {
-          throw new Error("invalid code");
-        }
+        // if (data.code != 0000) {
+        //   throw new Error("invalid code");
+        // }
         const userData = await user.create(data);
         let payload = { userId: userData.uId };
-        const token = jwtGenerate(payload, "secret", {
-          expiresIn: "24H",
-        });
+        // const token = jwtGenerate(payload, "secret", {
+        //   expiresIn: "24H",
+        // });
         return res
           .status(statusCodes[201].value)
-          .send({ data: userData, token: token });
+          .send({ data: userData });
       })
       .catch(async (err) => {
         console.error(err);
         return res
           .status(statusCodes[200].value)
-          .send({ data: err[0], token: err[1] });
+          .send({ data: err[0]});
       });
   } catch (error) {
     return res
@@ -96,6 +96,8 @@ const ssoRegisterAndLogin = async (req, res) => {
                 email: email,
                 profilePicture: picture,
                 language: locale,
+                isEmailVerified:true,
+                status:'active'
               })
             );
           }
@@ -138,6 +140,8 @@ const ssoRegisterAndLogin = async (req, res) => {
               name: name,
               email: email,
               profilePicture: picture.data.url,
+              isEmailVerified:true,
+                status:'active'
             })
           );
         }
@@ -506,6 +510,31 @@ const deleteReviewerPermanently = async (req, res) => {
   }
 };
 
+const deleteMultipleReviewerPermanently = async (req, res) => {
+  const { ids } = req.query;
+  try {
+    const result = await user.updateMany(
+      { _id: { $in: ids } },
+      { isDeleted: true }
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+
+const deleteReviewerTemporarily = async (req, res) => {
+  try {
+    const userData = await user.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
+    res.status(200).json(userData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
 module.exports = {
   registerUserWithEmail,
   getAllUsers,
@@ -514,5 +543,7 @@ module.exports = {
   filterUser,
   deleteSingleUser,
   deleteMultipleUser,
-  deleteReviewerPermanently
+  deleteReviewerPermanently,
+  deleteMultipleReviewerPermanently,
+  deleteReviewerTemporarily
 };
