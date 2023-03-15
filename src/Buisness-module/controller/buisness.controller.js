@@ -210,6 +210,7 @@ const searchBusinessRequests= async (req, res) => {
         { isDeleted: false },
         { isApproved: false },
         { rejected: false },
+        { createdByUser: false },
         {
           $or: [
             { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
@@ -229,22 +230,48 @@ const searchBusinessRequests= async (req, res) => {
 }
 
 const searchApprovedBusiness= async (req, res) => {
-  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+  const { search, page, limit,fromDate,toDate } = req.query; // the search query parameter and pagination parameters
+let query={
+  $and: [
+    { isDeleted: false },
+    { isApproved: true },
+    { rejected: false },
+    {
+      $or: [
+        { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+        { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+      ],
+    },
+ 
+  ],
+}
+  if(fromDate && toDate){
+    query.createdAt=   {
+      createdAt: {
+        $gte: new Date(fromDate) ,
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
+
+  if(fromDate && !toDate){
+    query.createdAt=   {
+      createdAt: {
+        $gte: new Date(fromDate) 
+      },
+    }
+  }
+
+  if(!fromDate && toDate){
+    query.createdAt=   {
+      createdAt: {
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
 
   try {
-    const businesses = await Business.find({
-      $and: [
-        { isDeleted: false },
-        { isApproved: true },
-        { rejected: false },
-        {
-          $or: [
-            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
-          ],
-        },
-      ],
-    })
+    const businesses = await Business.find(query)
       .skip((page - 1) * limit) // calculate the number of documents to skip
       .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
 
