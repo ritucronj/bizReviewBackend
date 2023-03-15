@@ -7,6 +7,7 @@ const {
   filterUser,
   deleteSingleUser,
   deleteMultipleUser,
+  deleteReviewerPermanently
 } = require("../controller/user.controller");
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.put("/updateProfile/:Id", updateUserProfile);
 router.get("/getUser", filterUser);
 router.put("/deleteuser/:id", deleteSingleUser);
 router.put("/deleteusers", deleteMultipleUser);
+router.put("/deleteReviewerPermanently/:id", deleteReviewerPermanently);
 
 module.exports = router;

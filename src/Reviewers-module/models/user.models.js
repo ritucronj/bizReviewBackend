@@ -30,6 +30,10 @@ const user = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    isEmailVerified:{
+        type: Boolean,
+        default: false 
     }
 }, { timestamps: true });
 
