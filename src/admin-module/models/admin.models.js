@@ -21,6 +21,10 @@ const admin = new mongoose.Schema({
         enum: ["super admin", "admin"],
         default: "admin"
     },
+    isDeleted:{
+   type:Boolean,
+   default:false
+    },
     status: {
         type: String,
         enum: ['active','inactive'],
