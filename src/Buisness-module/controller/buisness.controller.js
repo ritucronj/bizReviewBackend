@@ -15,6 +15,7 @@ const {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
+  sendStatusUpdateMail
 } = require("../../utils/SendMail");
 const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
@@ -209,6 +210,35 @@ const searchBusinessRequests= async (req, res) => {
         { isDeleted: false },
         { isApproved: false },
         { rejected: false },
+        { createdByUser: false },
+        {
+          $or: [
+            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ],
+        },
+      ],
+    })
+      .skip((page - 1) * limit) // calculate the number of documents to skip
+      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+
+    res.status(200).json(businesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const searchBusinessRequestsByReviewer= async (req, res) => {
+  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+
+  try {
+    const businesses = await Business.find({
+      $and: [
+        { isDeleted: false },
+        { isApproved: false },
+        { rejected: false },
+        { createdByUser: true },
         {
           $or: [
             { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
@@ -228,22 +258,48 @@ const searchBusinessRequests= async (req, res) => {
 }
 
 const searchApprovedBusiness= async (req, res) => {
-  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+  const { search, page, limit,fromDate,toDate } = req.query; // the search query parameter and pagination parameters
+let query={
+  $and: [
+    { isDeleted: false },
+    { isApproved: true },
+    { rejected: false },
+    {
+      $or: [
+        { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+        { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+      ],
+    },
+ 
+  ],
+}
+  if(fromDate && toDate){
+    query.createdAt=   {
+      createdAt: {
+        $gte: new Date(fromDate) ,
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
+
+  if(fromDate && !toDate){
+    query.createdAt=   {
+      createdAt: {
+        $gte: new Date(fromDate) 
+      },
+    }
+  }
+
+  if(!fromDate && toDate){
+    query.createdAt=   {
+      createdAt: {
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
 
   try {
-    const businesses = await Business.find({
-      $and: [
-        { isDeleted: false },
-        { isApproved: true },
-        { rejected: false },
-        {
-          $or: [
-            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
-          ],
-        },
-      ],
-    })
+    const businesses = await Business.find(query)
       .skip((page - 1) * limit) // calculate the number of documents to skip
       .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
 
@@ -365,10 +421,12 @@ const updateBusinessStatus = async (req, res) => {
   try {
    if(approved){
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
+    sendStatusUpdateMail(business.firstName,business.email,'Approved')
     res.status(200).json(business);
    }
    if(rejected){
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
+    sendStatusUpdateMail(business.firstName,business.email,'Rejected')
     res.status(200).json(business);
    }
   } catch (error) {
@@ -711,5 +769,6 @@ module.exports = {
   searchBusinessRequests,
   searchApprovedBusiness,
   searchBusinessWithReviews,
-  createBusinessByUser
+  createBusinessByUser,
+  searchBusinessRequestsByReviewer
 };

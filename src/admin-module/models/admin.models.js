@@ -20,7 +20,13 @@ const admin = new mongoose.Schema({
         type: String,
         enum: ["super admin", "admin"],
         default: "admin"
-    }
+    },
+    status: {
+        type: String,
+        enum: ['active','inactive'],
+        required: true,
+        default:'active'
+      },
 }, { timestamps: true });
 
 module.exports = mongoose.model("admin", admin);
