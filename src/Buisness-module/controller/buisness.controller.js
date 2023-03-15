@@ -15,6 +15,7 @@ const {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
+  sendStatusUpdateMail
 } = require("../../utils/SendMail");
 const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
@@ -365,10 +366,12 @@ const updateBusinessStatus = async (req, res) => {
   try {
    if(approved){
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
+    sendStatusUpdateMail(business.firstName,business.email,'Approved')
     res.status(200).json(business);
    }
    if(rejected){
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
+    sendStatusUpdateMail(business.firstName,business.email,'Rejected')
     res.status(200).json(business);
    }
   } catch (error) {
