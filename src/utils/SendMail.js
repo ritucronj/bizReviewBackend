@@ -1,19 +1,20 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+const transport = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+
 const sendVerifyEMail = async (name, email, uId) => {
   try {
-    const transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
     const mailOptions = {
       from: {
         name: "BizReview",
@@ -37,16 +38,7 @@ const sendVerifyEMail = async (name, email, uId) => {
 
 const sendResetPasswordMail = async (name, email, token) => {
   try {
-    const transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+ 
 
     const mailOptions = {
       from: {
@@ -71,17 +63,6 @@ const sendResetPasswordMail = async (name, email, token) => {
 
 const sendResetSuccessMail = async (name, email) => {
   try {
-    const transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
     const mailOptions = {
       from: {
         name: "BizReview",
@@ -105,8 +86,35 @@ const sendResetSuccessMail = async (name, email) => {
   } catch (error) {}
 };
 
+
+const sendStatusUpdateMail = async (name, email,status) => {
+  try {
+    const mailOptions = {
+      from: {
+        name: "BizReview",
+        address: process.env.EMAIL_USER,
+      },
+      to: email,
+      subject: `${name}, your request status has updated to ${status}`,
+      html:
+        "<p>Hi " +
+        name +
+        `, <br /> <br /> <h3> <strong>  Your status is updated to ${status}. </strong> </h3> <br />   <br />The BizReview Team</p>`,
+    };
+
+    transport.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Mail has been sent.`, info.response);
+      }
+    });
+  } catch (error) {}
+};
+
 module.exports = {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
+  sendStatusUpdateMail
 };
