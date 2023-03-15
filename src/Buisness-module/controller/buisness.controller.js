@@ -23,6 +23,7 @@ require("dotenv").config();
 const {
   updateReviewValidation,
 } = require("../../Reviewers-module/services/Validation-handler");
+const { request } = require("express");
 const createBusiness = async (req, res) => {
   try {
     const { error } = createBusinessValidation(req.body);
@@ -40,6 +41,25 @@ const createBusiness = async (req, res) => {
     return res.send({ createData });
   } catch (error) {
     return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+
+const createBusinessByUser = async (req, res) => {
+  try {
+    req.body.uId = uuidv4();
+    req.body.createdByUser=true;
+    req.body.createdBy= req.params.userId;
+    // Create a new business object with the request body
+    const business = new Business(req.body);
+    
+    // Save the business object to the database
+    const savedBusiness = await business.save();
+    
+    // Send the saved business object in the response
+    res.status(201).json(savedBusiness);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 };
 
@@ -188,6 +208,33 @@ const searchBusinessRequests= async (req, res) => {
       $and: [
         { isDeleted: false },
         { isApproved: false },
+        { rejected: false },
+        {
+          $or: [
+            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          ],
+        },
+      ],
+    })
+      .skip((page - 1) * limit) // calculate the number of documents to skip
+      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+
+    res.status(200).json(businesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const searchApprovedBusiness= async (req, res) => {
+  const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+
+  try {
+    const businesses = await Business.find({
+      $and: [
+        { isDeleted: false },
+        { isApproved: true },
         { rejected: false },
         {
           $or: [
@@ -662,5 +709,7 @@ module.exports = {
   resetPass,
   reviewReply,
   searchBusinessRequests,
-  searchBusinessWithReviews
+  searchApprovedBusiness,
+  searchBusinessWithReviews,
+  createBusinessByUser
 };

@@ -128,6 +128,14 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    createdByUser:{
+      type: Boolean,
+      default: false,
+    },
+   createdBy: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

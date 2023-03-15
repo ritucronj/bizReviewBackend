@@ -18,11 +18,15 @@ const {
   reviewReply,
   getAllBusiness,
   searchBusinessRequests,
-  searchBusinessWithReviews
+  searchApprovedBusiness,
+  searchBusinessWithReviews,
+  createBusinessByUser
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
 router.post("/business", createBusiness);
+
+router.post("/createBusinessByUser/:userId", createBusinessByUser);
 
 router.get("/verify-email", verifyEmail);
 
@@ -39,6 +43,8 @@ router.put("/business/:id", updateBusinessProfile);
 router.get('/getAllBusiness',getAllBusiness)
 
 router.get('/searchBusinessRequests',searchBusinessRequests)
+
+router.get('/searchApprovedBusinesses',searchApprovedBusiness)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 
