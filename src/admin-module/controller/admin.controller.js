@@ -63,8 +63,60 @@ const updateAdmin= (req, res) => {
       });
   }
 
+  const searchAdmin= async (req, res) => {
+    const { search, page, limit } = req.query; // the search query parameter and pagination parameters
+  
+    try {
+      const admins = await admin.find({
+        $and: [
+            { isDeleted: false },
+          {
+            $or: [
+              { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+              { name: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+            ],
+          },
+        ],
+      })
+        .skip((page - 1) * limit) // calculate the number of documents to skip
+        .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+  
+      res.status(200).json(admins);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  }
+
+  const deleteAdminPermanently = async (req, res) => {
+    try {
+      const Admin = await admin.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+      res.status(200).json(Admin);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  };
+  
+  const deleteMultipleAdminPermanently = async (req, res) => {
+    const { ids } = req.query;
+    try {
+      const result = await admin.updateMany(
+        { _id: { $in: ids } },
+        { isDeleted: true }
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  };
+
 module.exports = {
     adminRegister,
     adminLogin,
-    updateAdmin
+    updateAdmin,
+    searchAdmin,
+    deleteAdminPermanently,
+    deleteMultipleAdminPermanently
 }
