@@ -100,13 +100,13 @@ const updateAdmin= (req, res) => {
   };
   
   const deleteMultipleAdminPermanently = async (req, res) => {
-    const { ids } = req.query;
+    const { ids } = req.body;
     try {
       const result = await admin.updateMany(
         { _id: { $in: ids } },
         { isDeleted: true }
       );
-      res.status(200).json(result);
+      res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
     } catch (error) {
       console.error(error);
       res.status(500).send('Server error');
