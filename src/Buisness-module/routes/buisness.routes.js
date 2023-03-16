@@ -21,7 +21,8 @@ const {
   searchApprovedBusiness,
   searchBusinessWithReviews,
   createBusinessByUser,
-  searchBusinessRequestsByReviewer
+  searchBusinessRequestsByReviewer,
+  searchSubscriptions
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -50,6 +51,8 @@ router.get('/searchBusinessRequestsByReviewer',searchBusinessRequestsByReviewer)
 router.get('/searchApprovedBusinesses',searchApprovedBusiness)
 
 router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
+
+router.get('/searchSubscriptions',searchSubscriptions)
 
 router.put("/deleteBusinessPermanently/:id", deleteBusinessPermanently);
 
