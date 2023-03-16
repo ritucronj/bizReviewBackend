@@ -508,13 +508,13 @@ const deleteReviewerPermanently = async (req, res) => {
 };
 
 const deleteMultipleReviewerPermanently = async (req, res) => {
-  const { ids } = req.query;
+  const { ids } = req.body;
   try {
     const result = await user.updateMany(
       { _id: { $in: ids } },
       { isDeleted: true }
     );
-    res.status(200).json(result);
+    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');

@@ -453,13 +453,13 @@ const deleteBusinessPermanently = async (req, res) => {
 };
 
 const deleteMultipleBusinessPermanently = async (req, res) => {
-  const { ids } = req.query;
+  const { ids } = req.body;
   try {
     const result = await Business.updateMany(
       { _id: { $in: ids } },
       { isDeleted: true }
     );
-    res.status(200).json(result);
+    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
@@ -488,13 +488,13 @@ const deleteSubscription = async (req, res) => {
 };
 
 const deleteMultipleSubscription = async (req, res) => {
-  const { ids } = req.query;
+  const { ids } = req.body;
   try {
     const result = await Business.updateMany(
       { _id: { $in: ids } },
       { plan: "free" }
     );
-    res.status(200).json(result);
+    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
