@@ -22,7 +22,9 @@ const {
   searchBusinessWithReviews,
   createBusinessByUser,
   searchBusinessRequestsByReviewer,
-  searchSubscriptions
+  searchSubscriptions,
+  deleteSubscription,
+  deleteMultipleSubscription
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -55,6 +57,10 @@ router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
 router.get('/searchSubscriptions',searchSubscriptions)
 
 router.put("/deleteBusinessPermanently/:id", deleteBusinessPermanently);
+
+router.put("/deleteSubscription/:id", deleteSubscription);
+
+router.put("/deleteMultipleSubscription", deleteMultipleSubscription);
 
 router.put("/deleteMultipleBusinessPermanently", deleteMultipleBusinessPermanently);
 
