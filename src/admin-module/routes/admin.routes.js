@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.post('/registerAdmin', adminRegister);
 router.post('/loginAdmin', adminLogin);
-router.put('updateAdmin/:id',updateAdmin);
+router.put('/updateAdmin/:id',updateAdmin);
 router.get('/searchAdmin',searchAdmin);
 router.put("/deleteAdminPermanently/:id", deleteAdminPermanently);
 router.put("/deleteMultipleAdminPermanently", deleteMultipleAdminPermanently);

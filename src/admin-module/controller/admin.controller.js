@@ -10,7 +10,11 @@ const adminRegister = async (req, res) => {
             console.log('error',error)
             if (error) reject(new Error(error.details[0].message));
             req.body.password = await hashPassword(req.body.password);
-            resolve(await admin.create(req.body));
+            const adminData=admin.find({email:req.body.email})
+             if(adminData){
+              return res.status(statusCodes[400].value).send({ msg: 'User already exists' });
+             }
+             resolve(await admin.create(req.body));
         }).then((data) => {
             return res.status(statusCodes[201].value).send({ data: data, token: jwtGenerate({ userId: data.uId }, "secret", { expiresIn: "24H" }) });
         }).catch((err) => {
@@ -50,6 +54,7 @@ const adminLogin = async (req, res) => {
 }
 
 const updateAdmin= (req, res) => {
+  console.log('insidee')
     const id = req.params.id;
     const adminData = req.body;
   
