@@ -41,14 +41,14 @@ router.post("/verifyotp", async (req, res) => {
     const user= await User.findOne({ email: email })
     if (!findOtp) {
       res.status(400).send("OTP code not found");
-    } else if (findOtp.code === otp) {
+    } else if (findOtp.code === otp && user) {
        const token = jwtGenerate(req.body, "secret", {
           expiresIn: "24H",
         });
        await user.updateOne(
         { email: email },
         { $set: { status: 'active', isEmailVerified: true } })
-      res.status(200).send({message:"OTP verified successfully",token:token});
+      res.status(200).send({message:"OTP verified successfully",token:token,user:user});
     } else {
       res.status(400).send("OTP verification failed");
     }
