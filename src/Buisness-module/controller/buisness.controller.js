@@ -477,6 +477,30 @@ const deleteBusinessTemporarily = async (req, res) => {
   }
 };
 
+const deleteSubscription = async (req, res) => {
+  try {
+    const business = await Business.findByIdAndUpdate(req.params.id, { plan: "free" }, { new: true });
+    res.status(200).json(business);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
+const deleteMultipleSubscription = async (req, res) => {
+  const { ids } = req.query;
+  try {
+    const result = await Business.updateMany(
+      { _id: { $in: ids } },
+      { plan: "free" }
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+};
+
 const updateBusinessStatus = async (req, res) => {
   const { approved,rejected } = req.query;
   try {
@@ -832,5 +856,7 @@ module.exports = {
   searchBusinessWithReviews,
   createBusinessByUser,
   searchBusinessRequestsByReviewer,
-  searchSubscriptions
+  searchSubscriptions,
+  deleteSubscription,
+  deleteMultipleSubscription
 };
