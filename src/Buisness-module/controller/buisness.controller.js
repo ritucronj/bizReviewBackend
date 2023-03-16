@@ -47,7 +47,8 @@ const createBusiness = async (req, res) => {
 
 const createBusinessByUser = async (req, res) => {
   try {
-    req.body.uId = uuidv4();
+    if(req.params.userId){
+      req.body.uId = uuidv4();
     req.body.createdByUser=true;
     req.body.createdBy= req.params.userId;
     // Create a new business object with the request body
@@ -58,8 +59,10 @@ const createBusinessByUser = async (req, res) => {
     
     // Send the saved business object in the response
     res.status(201).json(savedBusiness);
+    }else{
+      res.status(500).send('Server Error');
+    }
   } catch (err) {
-    console.error(err);
     res.status(500).send('Server Error');
   }
 };
@@ -250,7 +253,7 @@ const searchBusinessRequestsByReviewer= async (req, res) => {
       .skip((page - 1) * limit) // calculate the number of documents to skip
       .limit(parseInt(limit));
        // convert the limit parameter to a number and use it as the limit
-       
+
 
 
 
