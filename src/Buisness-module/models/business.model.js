@@ -132,10 +132,11 @@ const businessSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-   createdBy: {
-      type: String,
-      default: null,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user"
     },
+
   },
   { timestamps: true }
 );
