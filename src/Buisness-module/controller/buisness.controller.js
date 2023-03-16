@@ -242,8 +242,8 @@ const searchBusinessRequestsByReviewer= async (req, res) => {
         { createdByUser: true },
         {
           $or: [
-            // { email: { $regex: new RegExp(search, 'i') } },
-            // { firstName: { $regex: new RegExp(search, 'i') } } 
+            { website: { $regex: new RegExp(search, 'i') } },
+            { companyName: { $regex: new RegExp(search, 'i') } } 
           ],
         },
       ],
