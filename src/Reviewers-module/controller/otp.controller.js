@@ -4,6 +4,7 @@ const sgMail = require("@sendgrid/mail");
 const OTP = require("../models/otp.model");
 const User = require("../models/user.models");
 require("dotenv").config();
+const { jwtGenerate } = require("../../utils/util.function");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -41,7 +42,7 @@ router.post("/verifyotp", async (req, res) => {
     if (!findOtp) {
       res.status(400).send("OTP code not found");
     } else if (findOtp.code === otp) {
-       const token = jwtGenerate(payload, "secret", {
+       const token = jwtGenerate(req.body, "secret", {
           expiresIn: "24H",
         });
        await user.updateOne(

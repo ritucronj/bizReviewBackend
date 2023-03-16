@@ -342,6 +342,67 @@ const searchBusinessWithReviews= async (req, res) => {
   }
 }
 
+const searchSubscriptions= async (req, res) => {
+  const { search, page, limit,fromDate,toDate } = req.query; // the search query parameter and pagination parameters
+
+  let query={
+    $and: [
+      { isDeleted: false },
+      { isApproved: true },
+      { rejected: false },
+      {
+        $or: [
+          { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
+          { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+        ],
+      },
+      {
+        $or: [
+          { planType: 'gold' } , 
+          { planType: 'silver' } , 
+          { planType: 'platinum' } , 
+          { planType: 'diamond' } , 
+        ],
+      },
+    ],
+  }
+
+  if(fromDate && toDate){
+    query.planPurchaseDate=   {
+      planPurchaseDate: {
+        $gte: new Date(fromDate) ,
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
+
+  if(fromDate && !toDate){
+    query.planPurchaseDate=   {
+      planPurchaseDate: {
+        $gte: new Date(fromDate) 
+      },
+    }
+  }
+
+  if(!fromDate && toDate){
+    query.planPurchaseDate=   {
+      planPurchaseDate: {
+        $lte:  new Date(toDate) ,
+      },
+    }
+  }
+  try {
+    const businesses = await Business.find(query)
+      .skip((page - 1) * limit) // calculate the number of documents to skip
+      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+
+    res.status(200).json(businesses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
 
 const getBusiness = async (req, res) => {
   try {
@@ -770,5 +831,6 @@ module.exports = {
   searchApprovedBusiness,
   searchBusinessWithReviews,
   createBusinessByUser,
-  searchBusinessRequestsByReviewer
+  searchBusinessRequestsByReviewer,
+  searchSubscriptions
 };
