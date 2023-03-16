@@ -232,7 +232,6 @@ const searchBusinessRequests= async (req, res) => {
 const searchBusinessRequestsByReviewer= async (req, res) => {
   const { search, page, limit } = req.query; // the search query parameter and pagination parameters
 
-  console.log('search',search)
   try {
     const businesses = await Business.find({
       $and: [
@@ -247,9 +246,11 @@ const searchBusinessRequestsByReviewer= async (req, res) => {
           ],
         },
       ],
-    })
+    }).populate("createdBy")
       .skip((page - 1) * limit) // calculate the number of documents to skip
-      .limit(parseInt(limit)); // convert the limit parameter to a number and use it as the limit
+      .limit(parseInt(limit));
+       // convert the limit parameter to a number and use it as the limit
+       
 
 
 
