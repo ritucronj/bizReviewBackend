@@ -500,7 +500,11 @@ const deleteMultipleUser = async (req, res) => {
 const deleteReviewerPermanently = async (req, res) => {
   try {
     const userData = await user.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
+   if(userData){
     res.status(200).json(userData);
+   }else{
+    res.status(400).send({message:'Incorrect user id'});
+   }
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
