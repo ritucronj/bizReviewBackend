@@ -452,7 +452,11 @@ const updateBusinessProfile = async (req, res) => {
 const deleteBusinessPermanently = async (req, res) => {
   try {
     const business = await Business.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
-    res.status(200).json(business);
+    if(business){
+      res.status(200).json(business);
+     }else{
+      res.status(400).send({message:'Incorrect business id'});
+     }
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
