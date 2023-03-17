@@ -490,7 +490,7 @@ const deleteBusinessTemporarily = async (req, res) => {
 
 const deleteSubscription = async (req, res) => {
   try {
-    const business = await Business.findByIdAndUpdate(req.params.id, { plan: "free" }, { new: true });
+    const business = await Business.findByIdAndUpdate(req.params.id, { planType: "free" }, { new: true });
     res.status(200).json(business);
   } catch (error) {
     console.error(error);
@@ -503,7 +503,7 @@ const deleteMultipleSubscription = async (req, res) => {
   try {
     const result = await Business.updateMany(
       { _id: { $in: ids } },
-      { plan: "free" }
+      { planType: "free" }
     );
     res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
   } catch (error) {
