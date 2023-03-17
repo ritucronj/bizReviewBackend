@@ -7,10 +7,9 @@ const adminRegister = async (req, res) => {
     try {
         return new Promise(async (resolve, reject) => {
             const { error } = adminRegistrationValidation(req.body);
-            console.log('error',error)
             if (error) reject(new Error(error.details[0].message));
             req.body.password = await hashPassword(req.body.password);
-            const adminData=admin.find({email:req.body.email})
+            const adminData=await admin.findOne({email:req.body.email})
              if(adminData){
               return res.status(statusCodes[400].value).send({ msg: 'User already exists' });
              }
