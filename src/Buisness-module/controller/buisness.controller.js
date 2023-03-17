@@ -513,14 +513,16 @@ const deleteMultipleSubscription = async (req, res) => {
 };
 
 const updateBusinessStatus = async (req, res) => {
-  const { approved,rejected } = req.query;
+  const { approved,rejected } = req.body;
   try {
-   if(approved){
+   if(approved && !rejected ){
+    console.log('inside first')
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
     sendStatusUpdateMail(business.firstName,business.email,'Approved')
     res.status(200).json(business);
    }
-   if(rejected){
+   if(rejected && !approved){
+    console.log('inside second')
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
     sendStatusUpdateMail(business.firstName,business.email,'Rejected')
     res.status(200).json(business);
