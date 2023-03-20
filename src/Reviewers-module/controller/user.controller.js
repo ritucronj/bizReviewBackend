@@ -81,9 +81,9 @@ const ssoRegisterAndLogin = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await user.findOne({ email: email });
-        if(findUser && !findUser.isDeleted){
+
           const registeredUser = findUser !== null ? true : false;
-          if (registeredUser) {
+          if (registeredUser && !findUser.isDeleted) {
             reject([
               findUser,
               jwtGenerate({ userId: findUser.uId }, "secret", {
@@ -91,6 +91,7 @@ const ssoRegisterAndLogin = async (req, res) => {
               }),
             ]);
           } else {
+           if(!registeredUser){
             resolve(
               await user.create({
                 name: name,
@@ -101,12 +102,9 @@ const ssoRegisterAndLogin = async (req, res) => {
                 status:'active'
               })
             );
+           }
           }
-        }else{
-          return res
-          .status(400)
-          .send({ 'message':'user deleted' });
-        }
+        
         });
         saveUserData
           .then((data) => {
@@ -133,8 +131,7 @@ const ssoRegisterAndLogin = async (req, res) => {
       const saveUserData = new Promise(async (resolve, reject) => {
         const findUser = await user.findOne({ email: email });
         const registeredUser = findUser !== null ? true : false;
-      if(findUser && !findUser.isDeleted){
-        if (registeredUser) {
+        if (registeredUser && !findUser.isDeleted) {
           reject([
             findUser,
             jwtGenerate({ userId: findUser.uId }, "secret", {
@@ -142,21 +139,19 @@ const ssoRegisterAndLogin = async (req, res) => {
             }),
           ]);
         } else {
-          resolve(
-            await user.create({
-              name: name,
-              email: email,
-              profilePicture: picture.data.url,
-              isEmailVerified:true,
-                status:'active'
-            })
-          );
+           if(!registeredUser){
+            resolve(
+              await user.create({
+                name: name,
+                email: email,
+                profilePicture: picture.data.url,
+                isEmailVerified:true,
+                  status:'active'
+              })
+            );
+           }
         }
-      }else{
-        return res
-        .status(400)
-        .send({ 'message':'user deleted' });
-      }
+      
       });
       saveUserData
         .then((data) => {

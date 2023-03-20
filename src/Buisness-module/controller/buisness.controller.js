@@ -76,9 +76,8 @@ const ssoSignBuisness = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
-         if(findUser && !findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
-          if (registeredUser) {
+          if (registeredUser && !findUser.isDeleted) {
             reject([
               findUser,
               jwtGenerate({ userId: findUser.uId }, "secret", {
@@ -86,6 +85,7 @@ const ssoSignBuisness = async (req, res) => {
               }),
             ]);
           } else {
+          if(!registeredUser){
             resolve(
               await Business.create({
                 companyName: hd,
@@ -96,11 +96,8 @@ const ssoSignBuisness = async (req, res) => {
               })
             );
           }
-         }else{
-          return res
-          .status(400)
-          .send({ 'message':'business deleted' });
-        }
+          }
+         
         });
         saveUserData
           .then((data) => {
