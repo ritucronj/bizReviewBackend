@@ -29,7 +29,7 @@ const adminLogin = async (req, res) => {
         return new Promise(async (resolve, reject) => {
             const { error } = adminLoginValidation(req.body);
             if (error) reject(new Error(error.details[0].message));
-            resolve(await admin.findOne({ email: req.body.email,status:'active' }));
+            resolve(await admin.findOne({ email: req.body.email,status:'active',isDeleted:false }));
         })
             .then((data) => {
                 const error = data === null ? true : false;

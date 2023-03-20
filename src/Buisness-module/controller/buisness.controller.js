@@ -76,6 +76,7 @@ const ssoSignBuisness = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
+         if(!findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
             reject([
@@ -95,6 +96,11 @@ const ssoSignBuisness = async (req, res) => {
               })
             );
           }
+         }else{
+          return res
+          .status(400)
+          .send({ 'message':'business deleted' });
+        }
         });
         saveUserData
           .then((data) => {
@@ -172,7 +178,7 @@ const setBusinessPassword = async (req, res) => {
 const loginBusiness = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const userData = await Business.findOne({ email });
+    const userData = await Business.findOne({ email ,isDeleted:false });
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
