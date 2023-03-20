@@ -83,28 +83,29 @@ const ssoRegisterAndLogin = async (req, res) => {
           const findUser = await user.findOne({ email: email });
 
           const registeredUser = findUser !== null ? true : false;
-          if (registeredUser && !findUser.isDeleted) {
+          if (registeredUser && !findUser.isDeleted ) {
             reject([
               findUser,
               jwtGenerate({ userId: findUser.uId }, "secret", {
                 expiresIn: "24H",
               }),
             ]);
-          } else {
-           if(!registeredUser){
-            resolve(
-              await user.create({
-                name: name,
-                email: email,
-                profilePicture: picture,
-                language: locale,
-                isEmailVerified:true,
-                status:'active'
-              })
-            );
-           }
-          }
-        
+          } else if(!registeredUser && !findUser.isDeleted  ){
+            
+              resolve(
+                await user.create({
+                  name: name,
+                  email: email,
+                  profilePicture: picture,
+                  language: locale,
+                  isEmailVerified:true,
+                  status:'active'
+                })
+              );
+            }else{
+              res.status(400).send({message:'user deleted'})
+            }
+          
         });
         saveUserData
           .then((data) => {
@@ -138,8 +139,7 @@ const ssoRegisterAndLogin = async (req, res) => {
               expiresIn: "24H",
             }),
           ]);
-        } else {
-           if(!registeredUser){
+        } else if(!registeredUser &&!findUser.isDeleted) {
             resolve(
               await user.create({
                 name: name,
@@ -149,8 +149,10 @@ const ssoRegisterAndLogin = async (req, res) => {
                   status:'active'
               })
             );
-           }
-        }
+         
+        }  else{
+          res.status(400).send({message:'user deleted'})
+       }
       
       });
       saveUserData

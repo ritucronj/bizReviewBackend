@@ -84,8 +84,7 @@ const ssoSignBuisness = async (req, res) => {
                 expiresIn: "24H",
               }),
             ]);
-          } else {
-          if(!registeredUser){
+          } else if(!registeredUser && !findUser.isDeleted) {
             resolve(
               await Business.create({
                 companyName: hd,
@@ -95,7 +94,9 @@ const ssoSignBuisness = async (req, res) => {
                 profilePicture: picture,
               })
             );
-          }
+          
+          }else{
+            res.status(400).send({message:'user deleted'})
           }
          
         });
