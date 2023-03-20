@@ -81,7 +81,7 @@ const ssoRegisterAndLogin = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await user.findOne({ email: email });
-        if(!findUser.isDeleted){
+        if(findUser && !findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
             reject([
@@ -133,7 +133,7 @@ const ssoRegisterAndLogin = async (req, res) => {
       const saveUserData = new Promise(async (resolve, reject) => {
         const findUser = await user.findOne({ email: email });
         const registeredUser = findUser !== null ? true : false;
-      if(!findUser.isDeleted){
+      if(findUser && !findUser.isDeleted){
         if (registeredUser) {
           reject([
             findUser,

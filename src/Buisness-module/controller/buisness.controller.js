@@ -76,7 +76,7 @@ const ssoSignBuisness = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
-         if(!findUser.isDeleted){
+         if(findUser && !findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
             reject([
