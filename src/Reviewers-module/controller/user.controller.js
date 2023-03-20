@@ -184,11 +184,10 @@ const ssoRegisterAndLogin = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     let files = req.files;
-    let userId = req.params.Id;
     const updatePromise = new Promise(async (resolve, reject) => {
       const { error } = userUpdateValidataion(req.body);
       if (error) reject(new Error(error.details[0].message));
-      const findUser = await user.findOneAndUpdate({ uId: userId }, req.body, {
+      const findUser = await user.findOneAndUpdate(req.params.id, req.body, {
         new: true,
       });
       if (findUser === null) reject(new Error("No User Found"));
