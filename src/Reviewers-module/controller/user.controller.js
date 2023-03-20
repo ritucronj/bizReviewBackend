@@ -20,7 +20,7 @@ const registerUserWithEmail = async (req, res) => {
         .send({ msg: error.details[0].message });
     data.uId = uuidv4();
     const checkUnique = new Promise(async (resolve, reject) => {
-      const findUser = await user.findOne({ email: data.email });
+      const findUser = await user.findOne({ email: data.email, isDeleted:false });
       const error = findUser !== null ? true : false;
       if (error) {
         reject([
@@ -81,6 +81,7 @@ const ssoRegisterAndLogin = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await user.findOne({ email: email });
+        if(findUser && !findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
             reject([
@@ -101,6 +102,11 @@ const ssoRegisterAndLogin = async (req, res) => {
               })
             );
           }
+        }else{
+          return res
+          .status(400)
+          .send({ 'message':'user deleted' });
+        }
         });
         saveUserData
           .then((data) => {
@@ -127,6 +133,7 @@ const ssoRegisterAndLogin = async (req, res) => {
       const saveUserData = new Promise(async (resolve, reject) => {
         const findUser = await user.findOne({ email: email });
         const registeredUser = findUser !== null ? true : false;
+      if(findUser && !findUser.isDeleted){
         if (registeredUser) {
           reject([
             findUser,
@@ -145,6 +152,11 @@ const ssoRegisterAndLogin = async (req, res) => {
             })
           );
         }
+      }else{
+        return res
+        .status(400)
+        .send({ 'message':'user deleted' });
+      }
       });
       saveUserData
         .then((data) => {
