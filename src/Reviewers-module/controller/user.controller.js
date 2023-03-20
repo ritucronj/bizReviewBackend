@@ -90,7 +90,7 @@ const ssoRegisterAndLogin = async (req, res) => {
                 expiresIn: "24H",
               }),
             ]);
-          } else if(!registeredUser && !findUser.isDeleted  ){
+          } else if(!registeredUser  ){
             
               resolve(
                 await user.create({
