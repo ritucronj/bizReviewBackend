@@ -8,12 +8,14 @@ const adminRegister = async (req, res) => {
         return new Promise(async (resolve, reject) => {
             const { error } = adminRegistrationValidation(req.body);
             if (error) reject(new Error(error.details[0].message));
+           else{
             req.body.password = await hashPassword(req.body.password);
             const adminData=await admin.findOne({email:req.body.email})
              if(adminData && !error){
               return res.status(statusCodes[400].value).send({ msg: 'User already exists' });
              }
              resolve(await admin.create(req.body));
+           }
         }).then((data) => {
             return res.status(statusCodes[201].value).send({ data: data, token: jwtGenerate({ userId: data.uId }, "secret", { expiresIn: "24H" }) });
         }).catch((err) => {
@@ -29,7 +31,9 @@ const adminLogin = async (req, res) => {
         return new Promise(async (resolve, reject) => {
             const { error } = adminLoginValidation(req.body);
             if (error) reject(new Error(error.details[0].message));
+           else{
             resolve(await admin.findOne({ email: req.body.email,status:'active',isDeleted:false }));
+           }
         })
             .then((data) => {
                 const error = data === null ? true : false;
@@ -52,10 +56,12 @@ const adminLogin = async (req, res) => {
     }
 }
 
-const updateAdmin= (req, res) => {
-  console.log('insidee')
+const updateAdmin=async (req, res) => {
     const id = req.params.id;
     const adminData = req.body;
+   if(adminData.password){
+    adminData.password = await hashPassword(adminData.password);
+   }
   
     // Find admin by ID and update their details
     admin.findByIdAndUpdate(id, adminData, { new: true })

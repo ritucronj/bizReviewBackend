@@ -16,7 +16,7 @@ const searchBuisness = async (req, res) => {
             .find(queryFilter)
             .limit(limit * 1)
             .skip((page - 1) * limit)
-            .select({ companyName: 1, website: 1, logo: 1, location: 1, _id: 0, uId: 1 });
+            .select({ companyName: 1, website: 1, profilePicture: 1, location: 1, _id: 0, uId: 1 });
         if (result.length === 0) return res.status(statusCodes[404].value).send({ msg: statusCodes[404].message });
         res.send(result);
     } catch (error) {

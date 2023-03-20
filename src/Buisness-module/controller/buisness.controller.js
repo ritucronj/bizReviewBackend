@@ -92,7 +92,7 @@ const ssoSignBuisness = async (req, res) => {
                 firstName: given_name,
                 lastName: family_name,
                 email: email,
-                logo: picture,
+                profilePicture: picture,
               })
             );
           }

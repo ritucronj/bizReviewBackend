@@ -79,7 +79,7 @@ const businessSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    logo: {
+    profilePicture: {
       type: String,
     },
     description: {
