@@ -56,10 +56,12 @@ const adminLogin = async (req, res) => {
     }
 }
 
-const updateAdmin= (req, res) => {
-  console.log('insidee')
+const updateAdmin=async (req, res) => {
     const id = req.params.id;
     const adminData = req.body;
+   if(adminData.password){
+    adminData.password = await hashPassword(adminData.password);
+   }
   
     // Find admin by ID and update their details
     admin.findByIdAndUpdate(id, adminData, { new: true })
