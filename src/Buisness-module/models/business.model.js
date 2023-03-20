@@ -22,6 +22,10 @@ const businessSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    planPrice: {
+      type: String,
+      default:'NA'
+    },
     companyName: {
       type: String,
       trim: true,
@@ -75,7 +79,7 @@ const businessSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    logo: {
+    profilePicture: {
       type: String,
     },
     description: {

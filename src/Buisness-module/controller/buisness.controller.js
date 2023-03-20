@@ -76,6 +76,7 @@ const ssoSignBuisness = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
+         if(findUser && !findUser.isDeleted){
           const registeredUser = findUser !== null ? true : false;
           if (registeredUser) {
             reject([
@@ -91,10 +92,15 @@ const ssoSignBuisness = async (req, res) => {
                 firstName: given_name,
                 lastName: family_name,
                 email: email,
-                logo: picture,
+                profilePicture: picture,
               })
             );
           }
+         }else{
+          return res
+          .status(400)
+          .send({ 'message':'business deleted' });
+        }
         });
         saveUserData
           .then((data) => {
@@ -172,7 +178,7 @@ const setBusinessPassword = async (req, res) => {
 const loginBusiness = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const userData = await Business.findOne({ email });
+    const userData = await Business.findOne({ email ,isDeleted:false });
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -452,7 +458,11 @@ const updateBusinessProfile = async (req, res) => {
 const deleteBusinessPermanently = async (req, res) => {
   try {
     const business = await Business.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
-    res.status(200).json(business);
+    if(business){
+      res.status(200).json(business);
+     }else{
+      res.status(400).send({message:'Incorrect business id'});
+     }
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
@@ -486,7 +496,7 @@ const deleteBusinessTemporarily = async (req, res) => {
 
 const deleteSubscription = async (req, res) => {
   try {
-    const business = await Business.findByIdAndUpdate(req.params.id, { plan: "free" }, { new: true });
+    const business = await Business.findByIdAndUpdate(req.params.id, { planType: "free" }, { new: true });
     res.status(200).json(business);
   } catch (error) {
     console.error(error);
@@ -499,7 +509,7 @@ const deleteMultipleSubscription = async (req, res) => {
   try {
     const result = await Business.updateMany(
       { _id: { $in: ids } },
-      { plan: "free" }
+      { planType: "free" }
     );
     res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
   } catch (error) {
@@ -509,14 +519,16 @@ const deleteMultipleSubscription = async (req, res) => {
 };
 
 const updateBusinessStatus = async (req, res) => {
-  const { approved,rejected } = req.query;
+  const { approved,rejected } = req.body;
   try {
-   if(approved){
+   if(approved && !rejected ){
+    console.log('inside first')
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
     sendStatusUpdateMail(business.firstName,business.email,'Approved')
     res.status(200).json(business);
    }
-   if(rejected){
+   if(rejected && !approved){
+    console.log('inside second')
     const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
     sendStatusUpdateMail(business.firstName,business.email,'Rejected')
     res.status(200).json(business);
