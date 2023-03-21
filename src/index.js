@@ -18,6 +18,7 @@ const dashboardRoutes = require("./admin-module/routes/dashboard.routes");
 const paypalRoutes = require("../src/Buisness-module/paypal");
 const stripeRoutes = require("../src/Buisness-module/Stripe");
 const otpRoutes = require("../src/Reviewers-module/controller/otp.controller");
+const uploadRoutes = require("../src/Reviewers-module/controller/s3Bucket.controller");
 
 app.use(express.json());
 app.use(cors());
@@ -27,7 +28,7 @@ app.use("/api/users/reviews", reviewRoutes);
 app.use("/api", businessRoutes);
 app.use("/api/search", search);
 app.use("/api/admin", adminRoutes, dashboardRoutes);
-app.use("/api", otpRoutes);
+app.use("/api", otpRoutes,uploadRoutes);
 app.use("/", paypalRoutes);
 app.use("/", stripeRoutes);
 

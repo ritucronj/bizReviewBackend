@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
+    "aws-sdk": "^2.1339.0",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "ejs": "^3.1.8",
@@ -19,6 +20,7 @@
     "joi": "^17.7.1",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.9.1",
+    "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.1",
     "passport": "^0.6.0",
