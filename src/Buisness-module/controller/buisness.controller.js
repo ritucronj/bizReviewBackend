@@ -77,28 +77,26 @@ const ssoSignBuisness = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await Business.findOne({ email: email });
-          if (findUser && !findUser.isDeleted) {
-            const registeredUser = findUser !== null ? true : false;
-            if (registeredUser) {
-              reject([
-                findUser,
-                jwtGenerate({ userId: findUser.uId }, "secret", {
-                  expiresIn: "24H",
-                }),
-              ]);
-            } else {
-              resolve(
-                await Business.create({
-                  companyName: hd,
-                  firstName: given_name,
-                  lastName: family_name,
-                  email: email,
-                  profilePicture: picture,
-                })
-              );
-            }
+          const registeredUser = findUser !== null ? true : false;
+          if (registeredUser && !findUser.isDeleted) {
+            reject([
+              findUser,
+              jwtGenerate({ userId: findUser.uId }, "secret", {
+                expiresIn: "24H",
+              }),
+            ]);
+          } else if (!registeredUser) {
+            resolve(
+              await Business.create({
+                companyName: hd,
+                firstName: given_name,
+                lastName: family_name,
+                email: email,
+                profilePicture: picture,
+              })
+            );
           } else {
-            return res.status(400).send({ message: "business deleted" });
+            res.status(400).send({ message: "user deleted" });
           }
         });
         saveUserData
@@ -160,13 +158,11 @@ const verifyEmail = async (req, res) => {
 
 const setBusinessPassword = async (req, res) => {
   try {
-    const id = req.params.id;
     const { password } = req.body;
     const securePass = await hashPassword(password);
-    const setPass = await Business.findOneAndUpdate(
-      { uId: id },
-      { password: securePass }
-    );
+    const setPass = await Business.findOneAndUpdate(req.params.id, {
+      password: securePass,
+    });
     return res.send({ message: `Password added successfully.` });
   } catch (error) {
     console.log(error);

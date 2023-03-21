@@ -81,32 +81,31 @@ const ssoRegisterAndLogin = async (req, res) => {
       if (email_verified) {
         const saveUserData = new Promise(async (resolve, reject) => {
           const findUser = await user.findOne({ email: email });
-        if(findUser && !findUser.isDeleted){
+
           const registeredUser = findUser !== null ? true : false;
-          if (registeredUser) {
+          if (registeredUser && !findUser.isDeleted ) {
             reject([
               findUser,
               jwtGenerate({ userId: findUser.uId }, "secret", {
                 expiresIn: "24H",
               }),
             ]);
-          } else {
-            resolve(
-              await user.create({
-                name: name,
-                email: email,
-                profilePicture: picture,
-                language: locale,
-                isEmailVerified:true,
-                status:'active'
-              })
-            );
-          }
-        }else{
-          return res
-          .status(400)
-          .send({ 'message':'user deleted' });
-        }
+          } else if(!registeredUser  ){
+            
+              resolve(
+                await user.create({
+                  name: name,
+                  email: email,
+                  profilePicture: picture,
+                  language: locale,
+                  isEmailVerified:true,
+                  status:'active'
+                })
+              );
+            }else{
+              res.status(400).send({message:'user deleted'})
+            }
+          
         });
         saveUserData
           .then((data) => {
@@ -133,30 +132,28 @@ const ssoRegisterAndLogin = async (req, res) => {
       const saveUserData = new Promise(async (resolve, reject) => {
         const findUser = await user.findOne({ email: email });
         const registeredUser = findUser !== null ? true : false;
-      if(findUser && !findUser.isDeleted){
-        if (registeredUser) {
+        if (registeredUser && !findUser.isDeleted) {
           reject([
             findUser,
             jwtGenerate({ userId: findUser.uId }, "secret", {
               expiresIn: "24H",
             }),
           ]);
-        } else {
-          resolve(
-            await user.create({
-              name: name,
-              email: email,
-              profilePicture: picture.data.url,
-              isEmailVerified:true,
-                status:'active'
-            })
-          );
-        }
-      }else{
-        return res
-        .status(400)
-        .send({ 'message':'user deleted' });
-      }
+        } else if(!registeredUser &&!findUser.isDeleted) {
+            resolve(
+              await user.create({
+                name: name,
+                email: email,
+                profilePicture: picture.data.url,
+                isEmailVerified:true,
+                  status:'active'
+              })
+            );
+         
+        }  else{
+          res.status(400).send({message:'user deleted'})
+       }
+      
       });
       saveUserData
         .then((data) => {
@@ -187,11 +184,10 @@ const ssoRegisterAndLogin = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     let files = req.files;
-    let userId = req.params.Id;
     const updatePromise = new Promise(async (resolve, reject) => {
       const { error } = userUpdateValidataion(req.body);
       if (error) reject(new Error(error.details[0].message));
-      const findUser = await user.findOneAndUpdate({ uId: userId }, req.body, {
+      const findUser = await user.findOneAndUpdate(req.params.id, req.body, {
         new: true,
       });
       if (findUser === null) reject(new Error("No User Found"));
