@@ -15,7 +15,8 @@ const {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
-  sendStatusUpdateMail
+  sendStatusUpdateMail,
+  contactUserEmail,
 } = require("../../utils/SendMail");
 const { statusCodes } = require("../../utils/statusCodes");
 const { jwtGenerate } = require("../../utils/util.function");
@@ -47,23 +48,23 @@ const createBusiness = async (req, res) => {
 
 const createBusinessByUser = async (req, res) => {
   try {
-    if(req.params.userId){
+    if (req.params.userId) {
       req.body.uId = uuidv4();
-    req.body.createdByUser=true;
-    req.body.createdBy= req.params.userId;
-    // Create a new business object with the request body
-    const business = new Business(req.body);
-    
-    // Save the business object to the database
-    const savedBusiness = await business.save();
-    
-    // Send the saved business object in the response
-    res.status(201).json(savedBusiness);
-    }else{
-      res.status(500).send('Server Error');
+      req.body.createdByUser = true;
+      req.body.createdBy = req.params.userId;
+      // Create a new business object with the request body
+      const business = new Business(req.body);
+
+      // Save the business object to the database
+      const savedBusiness = await business.save();
+
+      // Send the saved business object in the response
+      res.status(201).json(savedBusiness);
+    } else {
+      res.status(500).send("Server Error");
     }
   } catch (err) {
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -84,7 +85,7 @@ const ssoSignBuisness = async (req, res) => {
                 expiresIn: "24H",
               }),
             ]);
-          } else if(!registeredUser) {
+          } else if (!registeredUser) {
             resolve(
               await Business.create({
                 companyName: hd,
@@ -94,11 +95,9 @@ const ssoSignBuisness = async (req, res) => {
                 profilePicture: picture,
               })
             );
-          
-          }else{
-            res.status(400).send({message:'user deleted'})
+          } else {
+            res.status(400).send({ message: "user deleted" });
           }
-         
         });
         saveUserData
           .then((data) => {
@@ -106,27 +105,27 @@ const ssoSignBuisness = async (req, res) => {
             const token = jwtGenerate(payload, "secret", {
               expiresIn: "24H",
             });
-           if(data.isApproved){
-            return res
-            .status(statusCodes[201].value)
-            .send({ data: data, token: token });
-           }else{
-            return res
-            .status(statusCodes[201].value)
-            .send({ data: data, message:'Not approved' });
-           }
+            if (data.isApproved) {
+              return res
+                .status(statusCodes[201].value)
+                .send({ data: data, token: token });
+            } else {
+              return res
+                .status(statusCodes[201].value)
+                .send({ data: data, message: "Not approved" });
+            }
           })
           .catch((dataArr) => {
-            console.log('data',dataArr[0])
-           if(dataArr[0].isApproved){
-            return res
-            .status(statusCodes[200].value)
-            .send({ data: dataArr[0], token: dataArr[1] });
-           }else{
-            return res
-            .status(statusCodes[200].value)
-            .send({ data: dataArr[0], message:'Not approved' });
-           }
+            console.log("data", dataArr[0]);
+            if (dataArr[0].isApproved) {
+              return res
+                .status(statusCodes[200].value)
+                .send({ data: dataArr[0], token: dataArr[1] });
+            } else {
+              return res
+                .status(statusCodes[200].value)
+                .send({ data: dataArr[0], message: "Not approved" });
+            }
           });
       } else {
         return res
@@ -161,10 +160,9 @@ const setBusinessPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const securePass = await hashPassword(password);
-    const setPass = await Business.findOneAndUpdate(
-      req.params.id,
-      { password: securePass }
-    );
+    const setPass = await Business.findOneAndUpdate(req.params.id, {
+      password: securePass,
+    });
     return res.send({ message: `Password added successfully.` });
   } catch (error) {
     console.log(error);
@@ -175,16 +173,16 @@ const setBusinessPassword = async (req, res) => {
 const loginBusiness = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const userData = await Business.findOne({ email ,isDeleted:false });
+    const userData = await Business.findOne({ email, isDeleted: false });
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const isPasswordValid = await bcrypt.compare(password, userData.password);
-    if (!isPasswordValid ) {
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    if( !userData.isApproved){
-      return res.json({ data: userData,message:'Not Approved' });
+    if (!userData.isApproved) {
+      return res.json({ data: userData, message: "Not Approved" });
     }
     const token = jwt.sign({ _id: userData._id }, process.env.JWT_SECRET);
     return res.json({ token: token, data: userData });
@@ -196,7 +194,7 @@ const loginBusiness = async (req, res) => {
 
 const getAllBusiness = async (req, res) => {
   try {
-    const businessData = await Business.find({ isDeleted:false });
+    const businessData = await Business.find({ isDeleted: false });
 
     if (!businessData) {
       return res.status(404).send({ message: `User not found.` });
@@ -207,7 +205,7 @@ const getAllBusiness = async (req, res) => {
   }
 };
 
-const searchBusinessRequests= async (req, res) => {
+const searchBusinessRequests = async (req, res) => {
   const { search, page, limit } = req.query; // the search query parameter and pagination parameters
 
   try {
@@ -219,8 +217,8 @@ const searchBusinessRequests= async (req, res) => {
         { createdByUser: false },
         {
           $or: [
-            { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-            { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+            { email: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
+            { firstName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
           ],
         },
       ],
@@ -231,11 +229,11 @@ const searchBusinessRequests= async (req, res) => {
     res.status(200).json(businesses);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
-}
+};
 
-const searchBusinessRequestsByReviewer= async (req, res) => {
+const searchBusinessRequestsByReviewer = async (req, res) => {
   const { search, page, limit } = req.query; // the search query parameter and pagination parameters
 
   try {
@@ -247,65 +245,62 @@ const searchBusinessRequestsByReviewer= async (req, res) => {
         { createdByUser: true },
         {
           $or: [
-            { website: { $regex: new RegExp(search, 'i') } },
-            { companyName: { $regex: new RegExp(search, 'i') } } 
+            { website: { $regex: new RegExp(search, "i") } },
+            { companyName: { $regex: new RegExp(search, "i") } },
           ],
         },
       ],
-    }).populate("createdBy")
+    })
+      .populate("createdBy")
       .skip((page - 1) * limit) // calculate the number of documents to skip
       .limit(parseInt(limit));
-       // convert the limit parameter to a number and use it as the limit
-
-
-
+    // convert the limit parameter to a number and use it as the limit
 
     res.status(200).json(businesses);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
-}
+};
 
-const searchApprovedBusiness= async (req, res) => {
-  const { search, page, limit,fromDate,toDate } = req.query; // the search query parameter and pagination parameters
-let query={
-  $and: [
-    { isDeleted: false },
-    { isApproved: true },
-    { rejected: false },
-    {
-      $or: [
-        { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-        { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
-      ],
-    },
- 
-  ],
-}
-  if(fromDate && toDate){
-    query.createdAt=   {
-      createdAt: {
-        $gte: new Date(fromDate) ,
-        $lte:  new Date(toDate) ,
+const searchApprovedBusiness = async (req, res) => {
+  const { search, page, limit, fromDate, toDate } = req.query; // the search query parameter and pagination parameters
+  let query = {
+    $and: [
+      { isDeleted: false },
+      { isApproved: true },
+      { rejected: false },
+      {
+        $or: [
+          { email: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
+          { firstName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+        ],
       },
-    }
-  }
-
-  if(fromDate && !toDate){
-    query.createdAt=   {
+    ],
+  };
+  if (fromDate && toDate) {
+    query.createdAt = {
       createdAt: {
-        $gte: new Date(fromDate) 
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
       },
-    }
+    };
   }
 
-  if(!fromDate && toDate){
-    query.createdAt=   {
+  if (fromDate && !toDate) {
+    query.createdAt = {
       createdAt: {
-        $lte:  new Date(toDate) ,
+        $gte: new Date(fromDate),
       },
-    }
+    };
+  }
+
+  if (!fromDate && toDate) {
+    query.createdAt = {
+      createdAt: {
+        $lte: new Date(toDate),
+      },
+    };
   }
 
   try {
@@ -316,11 +311,11 @@ let query={
     res.status(200).json(businesses);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
-}
+};
 
-const searchBusinessWithReviews= async (req, res) => {
+const searchBusinessWithReviews = async (req, res) => {
   const search = req.query.search; // the search query parameter
 
   try {
@@ -328,78 +323,76 @@ const searchBusinessWithReviews= async (req, res) => {
       {
         $match: {
           $or: [
-            { companyName: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-            { website: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
-          ]
-        }
+            { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
+            { website: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+          ],
+        },
       },
       {
         $lookup: {
-          from: 'reviews', // the name of the Review collection
-          localField: '_id',
-          foreignField: 'businessId',
-          as: 'reviews'
-        }
-      }
+          from: "reviews", // the name of the Review collection
+          localField: "_id",
+          foreignField: "businessId",
+          as: "reviews",
+        },
+      },
     ]);
 
-    res.status(200).send(businesses)
-
-
+    res.status(200).send(businesses);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
-}
+};
 
-const searchSubscriptions= async (req, res) => {
-  const { search, page, limit,fromDate,toDate } = req.query; // the search query parameter and pagination parameters
+const searchSubscriptions = async (req, res) => {
+  const { search, page, limit, fromDate, toDate } = req.query; // the search query parameter and pagination parameters
 
-  let query={
+  let query = {
     $and: [
       { isDeleted: false },
       { isApproved: true },
       { rejected: false },
       {
         $or: [
-          { email: { $regex: new RegExp(search, 'i') } }, // case-insensitive search by companyName
-          { firstName: { $regex: new RegExp(search, 'i') } } // case-insensitive search by website
+          { email: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
+          { firstName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
         ],
       },
       {
         $or: [
-          { planType: 'gold' } , 
-          { planType: 'silver' } , 
-          { planType: 'platinum' } , 
-          { planType: 'diamond' } , 
+          { planType: "gold" },
+          { planType: "silver" },
+          { planType: "platinum" },
+          { planType: "diamond" },
         ],
       },
     ],
+  };
+
+  if (fromDate && toDate) {
+    query.planPurchaseDate = {
+      planPurchaseDate: {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      },
+    };
   }
 
-  if(fromDate && toDate){
-    query.planPurchaseDate=   {
+  if (fromDate && !toDate) {
+    query.planPurchaseDate = {
       planPurchaseDate: {
-        $gte: new Date(fromDate) ,
-        $lte:  new Date(toDate) ,
+        $gte: new Date(fromDate),
       },
-    }
+    };
   }
 
-  if(fromDate && !toDate){
-    query.planPurchaseDate=   {
+  if (!fromDate && toDate) {
+    query.planPurchaseDate = {
       planPurchaseDate: {
-        $gte: new Date(fromDate) 
+        $lte: new Date(toDate),
       },
-    }
-  }
-
-  if(!fromDate && toDate){
-    query.planPurchaseDate=   {
-      planPurchaseDate: {
-        $lte:  new Date(toDate) ,
-      },
-    }
+    };
   }
   try {
     const businesses = await Business.find(query)
@@ -409,10 +402,9 @@ const searchSubscriptions= async (req, res) => {
     res.status(200).json(businesses);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
-}
-
+};
 
 const getBusiness = async (req, res) => {
   try {
@@ -454,15 +446,19 @@ const updateBusinessProfile = async (req, res) => {
 
 const deleteBusinessPermanently = async (req, res) => {
   try {
-    const business = await Business.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
-    if(business){
+    const business = await Business.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true },
+      { new: true }
+    );
+    if (business) {
       res.status(200).json(business);
-     }else{
-      res.status(400).send({message:'Incorrect business id'});
-     }
+    } else {
+      res.status(400).send({ message: "Incorrect business id" });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
@@ -473,31 +469,41 @@ const deleteMultipleBusinessPermanently = async (req, res) => {
       { _id: { $in: ids } },
       { isDeleted: true }
     );
-    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
+    res.status(200).json({
+      result: result,
+      message: `${result.modifiedCount} updated successfully`,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
-
 const deleteBusinessTemporarily = async (req, res) => {
   try {
-    const business = await Business.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
+    const business = await Business.findByIdAndUpdate(
+      req.params.id,
+      { status: "inactive" },
+      { new: true }
+    );
     res.status(200).json(business);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
 const deleteSubscription = async (req, res) => {
   try {
-    const business = await Business.findByIdAndUpdate(req.params.id, { planType: "free" }, { new: true });
+    const business = await Business.findByIdAndUpdate(
+      req.params.id,
+      { planType: "free" },
+      { new: true }
+    );
     res.status(200).json(business);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
@@ -508,31 +514,42 @@ const deleteMultipleSubscription = async (req, res) => {
       { _id: { $in: ids } },
       { planType: "free" }
     );
-    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
+    res.status(200).json({
+      result: result,
+      message: `${result.modifiedCount} updated successfully`,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
 const updateBusinessStatus = async (req, res) => {
-  const { approved,rejected } = req.body;
+  const { approved, rejected } = req.body;
   try {
-   if(approved && !rejected ){
-    console.log('inside first')
-    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: true, rejected:false,status:'active' }, { new: true });
-    sendStatusUpdateMail(business.firstName,business.email,'Approved')
-    res.status(200).json(business);
-   }
-   if(rejected && !approved){
-    console.log('inside second')
-    const business = await Business.findByIdAndUpdate(req.params.id, { isApproved: false, rejected:true,status:'inactive' }, { new: true });
-    sendStatusUpdateMail(business.firstName,business.email,'Rejected')
-    res.status(200).json(business);
-   }
+    if (approved && !rejected) {
+      console.log("inside first");
+      const business = await Business.findByIdAndUpdate(
+        req.params.id,
+        { isApproved: true, rejected: false, status: "active" },
+        { new: true }
+      );
+      sendStatusUpdateMail(business.firstName, business.email, "Approved");
+      res.status(200).json(business);
+    }
+    if (rejected && !approved) {
+      console.log("inside second");
+      const business = await Business.findByIdAndUpdate(
+        req.params.id,
+        { isApproved: false, rejected: true, status: "inactive" },
+        { new: true }
+      );
+      sendStatusUpdateMail(business.firstName, business.email, "Rejected");
+      res.status(200).json(business);
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
@@ -850,6 +867,17 @@ const reviewReply = async (req, res) => {
   }
 };
 
+const contactUser = async (req, res) => {
+  try {
+    const { name, email, mailBody } = req.body;
+    contactUserEmail(name, email, mailBody);
+    res.status(200).json({ data: "Mail Sent" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -874,5 +902,6 @@ module.exports = {
   searchBusinessRequestsByReviewer,
   searchSubscriptions,
   deleteSubscription,
-  deleteMultipleSubscription
+  deleteMultipleSubscription,
+  contactUser,
 };

@@ -13,7 +13,6 @@ const transport = nodemailer.createTransport({
   },
 });
 
-
 const sendVerifyEMail = async (name, email, uId) => {
   try {
     const mailOptions = {
@@ -39,8 +38,6 @@ const sendVerifyEMail = async (name, email, uId) => {
 
 const sendResetPasswordMail = async (name, email, token) => {
   try {
-
-    
     const mailOptions = {
       from: {
         name: "BizReview",
@@ -112,9 +109,33 @@ const sendStatusUpdateMail = async (name, email, status) => {
   } catch (error) {}
 };
 
+const contactUserEmail = async (name, email, mailBody) => {
+  try {
+    const mailOptions = {
+      from: {
+        name: "BizReview",
+        address: process.env.EMAIL_USER,
+      },
+      to: email,
+      subject: ``,
+      html: `<p> Hi  ${name}
+        , <br><br>  ${mailBody}`,
+    };
+
+    transport.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Mail has been sent.`, info.response);
+      }
+    });
+  } catch (error) {}
+};
+
 module.exports = {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
   sendStatusUpdateMail,
+  contactUserEmail,
 };
