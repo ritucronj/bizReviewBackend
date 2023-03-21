@@ -5,6 +5,7 @@ const transport = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
+  pool: true,
   requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
@@ -38,8 +39,8 @@ const sendVerifyEMail = async (name, email, uId) => {
 
 const sendResetPasswordMail = async (name, email, token) => {
   try {
- 
 
+    
     const mailOptions = {
       from: {
         name: "BizReview",
@@ -86,8 +87,7 @@ const sendResetSuccessMail = async (name, email) => {
   } catch (error) {}
 };
 
-
-const sendStatusUpdateMail = async (name, email,status) => {
+const sendStatusUpdateMail = async (name, email, status) => {
   try {
     const mailOptions = {
       from: {
@@ -116,5 +116,5 @@ module.exports = {
   sendVerifyEMail,
   sendResetPasswordMail,
   sendResetSuccessMail,
-  sendStatusUpdateMail
+  sendStatusUpdateMail,
 };
