@@ -379,20 +379,23 @@ const searchSubscriptions = async (req, res) => {
     };
   }
 
-  if (fromDate && !toDate) {
-    query.planPurchaseDate = {
-      planPurchaseDate: {
-        $gte: new Date(fromDate),
-      },
-    };
+  if(fromDate && toDate){
+    query.planPurchaseDate=   {
+        $gte: new Date(fromDate) ,
+        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
+    }
   }
 
-  if (!fromDate && toDate) {
-    query.planPurchaseDate = {
-      planPurchaseDate: {
-        $lte: new Date(toDate),
-      },
-    };
+  if(fromDate && !toDate){
+    query.planPurchaseDate=   {
+        $gte: new Date(fromDate) 
+    }
+  }
+
+  if(!fromDate && toDate){
+    query.planPurchaseDate=   {
+        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
+    }
   }
   try {
     const businesses = await Business.find(query)

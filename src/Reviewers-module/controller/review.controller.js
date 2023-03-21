@@ -3,7 +3,8 @@ const user = require("../models/user.models");
 const { statusCodes } = require("../services/statusCodes");
 const { updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require("uuid");
-const businessModel = require("../../Buisness-module/models/business.model");
+const businessModel=require('../../Buisness-module/models/business.model');
+const { find } = require("../models/review.models");
 
 const createCompanyReview = async (req, res) => {
   try {
@@ -113,26 +114,31 @@ const searchAllReviewsByUser = async (req, res) => {
   const userId = req.params.userId;
   const { fromDate, toDate, search, rating } = req.query;
   const filters = { createdBy: userId, isDeleted: false };
-  if (fromDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
-  if (toDate) {
+  if (fromDate && !toDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
+  if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
-    filters.dateOfExperience["$lte"] = new Date(toDate);
+    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate()+1);;
+  }
+  if(fromDate && toDate){
+    filters.dateOfExperience = { 
+      $gte: new Date(fromDate),
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1) 
+     };
   }
   if (search) {
     const regex = new RegExp(search, "i");
-    const findBusiness = await businessModel.findOne({
-      $or: [{ companyName: regex }, { email: regex }, { website: regex }],
-    });
+    const findBusiness = await businessModel.findOne({$or : [
+      { companyName: regex }
+    ] });
 
-    filters.businessId = findBusiness._id.toString();
+
+    filters.businessId= findBusiness && findBusiness._id.toString();
   }
-  if (rating) filters.rating = { $gte: Number(rating) };
+  if (rating) filters.rating =  Number(rating) ;
   try {
-    console.log("filters", filters);
-    const reviews = await review
-      .find(filters)
-      .populate("businessId")
-      .populate("createdBy");
+    const reviews = await review.find(filters)
+    .populate("businessId")
+    .populate('createdBy');
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
