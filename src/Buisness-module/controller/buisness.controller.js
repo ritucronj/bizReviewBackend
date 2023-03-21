@@ -159,11 +159,10 @@ const verifyEmail = async (req, res) => {
 
 const setBusinessPassword = async (req, res) => {
   try {
-    const id = req.params.id;
     const { password } = req.body;
     const securePass = await hashPassword(password);
     const setPass = await Business.findOneAndUpdate(
-      { uId: id },
+      req.params.id,
       { password: securePass }
     );
     return res.send({ message: `Password added successfully.` });
