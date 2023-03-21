@@ -110,10 +110,16 @@ const searchAllReviewsByUser=async(req,res)=>{
   const userId = req.params.userId;
   const { fromDate, toDate, search, rating } = req.query;
   const filters = { createdBy: userId, isDeleted: false };
-  if (fromDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
-  if (toDate) {
+  if (fromDate && !toDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
+  if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
     filters.dateOfExperience["$lte"] = new Date(toDate);
+  }
+  if(fromDate && toDate){
+    filters.dateOfExperience = { 
+      $gte: new Date(fromDate),
+      $lte: new Date(toDate)
+     };
   }
   if (search) {
     const regex = new RegExp(search, "i");
