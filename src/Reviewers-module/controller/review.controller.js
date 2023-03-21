@@ -83,7 +83,7 @@ const readAllReviews = async (req, res) => {
   try {
     // Find all reviews from the database and populate their replies
     const reviews = await review
-      .find({isDeleted: false})
+      .find({ isDeleted: false })
       .sort({ createdAt: -1 })
       .populate("createdBy")
       .populate("businessId");
@@ -96,18 +96,21 @@ const readAllReviews = async (req, res) => {
   }
 };
 
-const readAllReviewsByUser=async(req,res)=>{
+const readAllReviewsByUser = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const reviews = await review.find({ createdBy: userId,isDeleted: false }).populate("businessId").populate("createdBy");
+    const reviews = await review
+      .find({ createdBy: userId, isDeleted: false })
+      .populate("businessId")
+      .populate("createdBy");
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-const searchAllReviewsByUser=async(req,res)=>{
+const searchAllReviewsByUser = async (req, res) => {
   const userId = req.params.userId;
   const { fromDate, toDate, search, rating } = req.query;
   const filters = { createdBy: userId, isDeleted: false };
@@ -141,21 +144,23 @@ const searchAllReviewsByUser=async(req,res)=>{
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-const updateCompanyReview=async (req, res) => {
+const updateCompanyReview = async (req, res) => {
   try {
-    const { title, description, rating, dateOfExperience,status,isDeleted } = req.body;
+    const { title, description, rating, dateOfExperience, status, isDeleted } =
+      req.body;
     const reviewData = await review.findById(req.params.reviewId);
 
     if (!reviewData) {
-      return res.status(404).json({ message: 'ReviewData not found' });
+      return res.status(404).json({ message: "ReviewData not found" });
     }
 
     reviewData.title = title || reviewData.title;
     reviewData.description = description || reviewData.description;
     reviewData.rating = rating || reviewData.rating;
-    reviewData.dateOfExperience = dateOfExperience || reviewData.dateOfExperience;
+    reviewData.dateOfExperience =
+      dateOfExperience || reviewData.dateOfExperience;
     reviewData.status = status || reviewData.status;
     reviewData.isDeleted = isDeleted || reviewData.isDeleted;
 
@@ -163,11 +168,11 @@ const updateCompanyReview=async (req, res) => {
     res.json(updatedReviewData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
-}
+};
 
-const getReviewById=async(req,res)=>{
+const getReviewById = async (req, res) => {
   const id = req.params.id;
   try {
     const review = await review.findOne({ _id: id, isDeleted: false });
@@ -180,11 +185,38 @@ const getReviewById=async(req,res)=>{
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
-
-
-
+const importCompanyReview = async (req, res) => {
+  try {
+    let reviews = req.body;
+    const businessId = req.params.businessId;
+    // let reviewsData = [];
+    reviews.filter(async (item) => {
+      let createdBy = await user.find({ email: item.email });
+      item.createdBy = createdBy[0]?._id.valueOf();
+      item.businessId = businessId;
+      // reviewsData.push(
+      try {
+        const reviewData = new review({
+          title: item.title,
+          createdBy: item.createdBy,
+          businessId: businessId,
+          rating: item.rating,
+          description: item.description,
+          dateOfExperience: item.dateofexperience,
+        });
+        // );
+        const savedReview = await reviewData.save();
+        res.status(201).json("Reviews imported successfully");
+      } catch (error) {
+        res.status(400).send("Invalid Data");
+      }
+    });
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
 
 module.exports = {
   createCompanyReview,
@@ -192,6 +224,6 @@ module.exports = {
   readAllReviewsByUser,
   searchAllReviewsByUser,
   updateCompanyReview,
-  getReviewById
- 
+  getReviewById,
+  importCompanyReview,
 };

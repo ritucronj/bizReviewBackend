@@ -24,7 +24,8 @@ const {
   searchBusinessRequestsByReviewer,
   searchSubscriptions,
   deleteSubscription,
-  deleteMultipleSubscription
+  deleteMultipleSubscription,
+  contactUser,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -44,17 +45,20 @@ router.post("/business/google", ssoSignBuisness);
 
 router.put("/business/:id", updateBusinessProfile);
 
-router.get('/getAllBusiness',getAllBusiness)
+router.get("/getAllBusiness", getAllBusiness);
 
-router.get('/searchBusinessRequests',searchBusinessRequests)
+router.get("/searchBusinessRequests", searchBusinessRequests);
 
-router.get('/searchBusinessRequestsByReviewer',searchBusinessRequestsByReviewer)
+router.get(
+  "/searchBusinessRequestsByReviewer",
+  searchBusinessRequestsByReviewer
+);
 
-router.get('/searchApprovedBusinesses',searchApprovedBusiness)
+router.get("/searchApprovedBusinesses", searchApprovedBusiness);
 
-router.get('/searchBusinessWithReviews',searchBusinessWithReviews)
+router.get("/searchBusinessWithReviews", searchBusinessWithReviews);
 
-router.get('/searchSubscriptions',searchSubscriptions)
+router.get("/searchSubscriptions", searchSubscriptions);
 
 router.put("/deleteBusinessPermanently/:id", deleteBusinessPermanently);
 
@@ -62,7 +66,10 @@ router.put("/deleteSubscription/:id", deleteSubscription);
 
 router.put("/deleteMultipleSubscription", deleteMultipleSubscription);
 
-router.put("/deleteMultipleBusinessPermanently", deleteMultipleBusinessPermanently);
+router.put(
+  "/deleteMultipleBusinessPermanently",
+  deleteMultipleBusinessPermanently
+);
 
 router.put("/deleteBusinessTemporarily/:id", deleteBusinessTemporarily);
 
@@ -75,5 +82,6 @@ router.post("/forgot-password", forgotPass);
 router.put("/reset-password", resetPass);
 
 router.post("/reviews/:id/reply", reviewReply);
+router.post("/contactUser", contactUser);
 
 module.exports = router;
