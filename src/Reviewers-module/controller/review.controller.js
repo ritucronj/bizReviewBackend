@@ -3,7 +3,8 @@ const user = require("../models/user.models");
 const { statusCodes } = require("../services/statusCodes");
 const { updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require("uuid");
-const businessModel=require('../../Buisness-module/models/business.model')
+const businessModel=require('../../Buisness-module/models/business.model');
+const { find } = require("../models/review.models");
 
 const createCompanyReview = async (req, res) => {
   try {
@@ -124,13 +125,11 @@ const searchAllReviewsByUser=async(req,res)=>{
   if (search) {
     const regex = new RegExp(search, "i");
     const findBusiness = await businessModel.findOne({$or : [
-      { companyName: regex },
-      { email: regex },
-      { website: regex },
+      { companyName: regex }
     ] });
 
 
-    filters.businessId=findBusiness._id.toString()
+    filters.businessId= findBusiness && findBusiness._id.toString();
   }
   if (rating) filters.rating =  Number(rating) ;
   try {
