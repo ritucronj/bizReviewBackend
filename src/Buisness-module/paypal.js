@@ -2,15 +2,28 @@ const express = require("express");
 const router = express.Router();
 const paypal = require("paypal-rest-sdk");
 require("dotenv").config();
-const serverAddr = process.env.SERVER_ADDR;
+const Business = require("./models/business.model");
+const serverAddr = process.env.SERVER_ADDR1;
+const Port = process.env.PORT;
+const SERVER_ADDR1 = process.env.SERVER_ADDR1;
 
 paypal.configure({
   mode: "sandbox",
   client_id: process.env.PAYPAL_CLIENT_ID,
   client_secret: process.env.PAYPAL_CLIENT_SECRET,
 });
-router.get("/subscribe/:plan", function (req, res) {
-  var plan = req.params.plan;
+var uid;
+var date = new Date();
+var planPurchaseDate;
+var planPrice;
+var plan;
+
+router.post("/subscribe/:plan", function (req, res) {
+  plan = req.params.plan;
+  uid = req.body.id;
+  date = new Date();
+  planPurchaseDate = date;
+  planPrice = req.body.price;
   var billingPlanId;
 
   if (
@@ -42,8 +55,8 @@ router.get("/subscribe/:plan", function (req, res) {
       },
     ],
     merchant_preferences: {
-      cancel_url: `${serverAddr}/cancel`,
-      return_url: `${serverAddr}/success`,
+      cancel_url: `http://localhost:${Port}/cancel`,
+      return_url: `http://localhost:${Port}/success`,
       auto_bill_amount: "YES",
       initial_fail_amount_action: "CONTINUE",
       max_fail_attempts: "0",
@@ -114,13 +127,23 @@ router.get("/subscribe/:plan", function (req, res) {
 
               paypal.billingAgreement.create(
                 billingAgreementAttributes,
-                function (error, billingAgreement) {
+                async function (error, billingAgreement) {
                   if (error) {
                     throw error;
                   } else {
                     for (var i = 0; i < billingAgreement.links.length; i++) {
                       if (billingAgreement.links[i].rel === "approval_url") {
                         res.redirect(billingAgreement.links[i].href);
+                        // const business = await Business.findByIdAndUpdate(
+                        //   uid,
+                        //   {
+                        //     planType: plan,
+                        //     planPurchaseDate: planPurchaseDate,
+                        //     isPlanExpired: false,
+                        //     planPrice: planPrice,
+                        //   },
+                        //   { new: true }
+                        // );
                       }
                     }
                   }
@@ -134,24 +157,48 @@ router.get("/subscribe/:plan", function (req, res) {
   );
 });
 
-router.get("/success", function (req, res) {
+router.get("/success", async function (req, res) {
+  console.log("req in paypal", req);
+  const business = await Business.findByIdAndUpdate(
+    uid,
+    {
+      planType: plan,
+      planPurchaseDate: planPurchaseDate,
+      isPlanExpired: false,
+      planPrice: planPrice,
+    },
+    { new: true }
+  );
+  console.log("outside", business);
   var token = req.query.token;
   // Execute the billing agreement
   paypal.billingAgreement.execute(
     token,
     {},
-    function (error, billingAgreement) {
+    async function (error, billingAgreement) {
       if (error) {
         throw error;
       } else {
-        res.send("Success");
+        const business = await Business.findByIdAndUpdate(
+          uid,
+          {
+            planType: plan,
+            planPurchaseDate: planPurchaseDate,
+            isPlanExpired: false,
+            planPrice: planPrice,
+          },
+          { new: true }
+        );
+        console.log("success", business);
+        res.redirect(`${SERVER_ADDR1}/success`);
       }
     }
   );
 });
 
 router.get("/cancel", function (req, res) {
-  res.send("Cancelled");
+  // res.send("Cancelled");
+  res.redirect(`${SERVER_ADDR1}/cancel`);
 });
 
 module.exports = router;
