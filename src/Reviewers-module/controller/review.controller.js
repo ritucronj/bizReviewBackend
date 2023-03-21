@@ -113,12 +113,12 @@ const searchAllReviewsByUser=async(req,res)=>{
   if (fromDate && !toDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
   if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
-    filters.dateOfExperience["$lte"] = new Date(toDate);
+    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate()+1);;
   }
   if(fromDate && toDate){
     filters.dateOfExperience = { 
       $gte: new Date(fromDate),
-      $lte: new Date(toDate)
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1) 
      };
   }
   if (search) {
@@ -132,9 +132,8 @@ const searchAllReviewsByUser=async(req,res)=>{
 
     filters.businessId=findBusiness._id.toString()
   }
-  if (rating) filters.rating = { $gte: Number(rating) };
+  if (rating) filters.rating =  Number(rating) ;
   try {
-    console.log('filters',filters)
     const reviews = await review.find(filters)
     .populate("businessId")
     .populate('createdBy');
