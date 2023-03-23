@@ -54,7 +54,7 @@ const createBusinessByUser = async (req, res) => {
       req.body.createdBy = req.params.userId;
       // Create a new business object with the request body
 
-      const businessFound= Business.findOne({website:req.body.website})
+      const businessFound= await Business.findOne({website:req.body.website})
       console.log('business',businessFound)
        if(!businessFound){
         const business = await new Business(req.body);
