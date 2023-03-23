@@ -45,7 +45,7 @@ router.post("/verifyotp", async (req, res) => {
        const token = jwtGenerate(req.body, "secret", {
           expiresIn: "24H",
         });
-       await user.updateOne(
+       await User.updateOne(
         { email: email },
         { $set: { status: 'active', isEmailVerified: true } })
         console.log('user',user)
