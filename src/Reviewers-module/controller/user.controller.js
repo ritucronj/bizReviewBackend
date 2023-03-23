@@ -20,7 +20,10 @@ const registerUserWithEmail = async (req, res) => {
         .send({ msg: error.details[0].message });
     data.uId = uuidv4();
     const checkUnique = new Promise(async (resolve, reject) => {
-      const findUser = await user.findOne({ email: data.email, isDeleted:false });
+      const findUser = await user.findOne({
+        email: data.email,
+        isDeleted: false,
+      });
       const error = findUser !== null ? true : false;
       if (error) {
         reject([
@@ -41,15 +44,11 @@ const registerUserWithEmail = async (req, res) => {
         // const token = jwtGenerate(payload, "secret", {
         //   expiresIn: "24H",
         // });
-        return res
-          .status(statusCodes[201].value)
-          .send({ data: userData });
+        return res.status(statusCodes[201].value).send({ data: userData });
       })
       .catch(async (err) => {
         console.error(err);
-        return res
-          .status(statusCodes[200].value)
-          .send({ data: err[0]});
+        return res.status(statusCodes[200].value).send({ data: err[0] });
       });
   } catch (error) {
     return res
@@ -83,29 +82,27 @@ const ssoRegisterAndLogin = async (req, res) => {
           const findUser = await user.findOne({ email: email });
 
           const registeredUser = findUser !== null ? true : false;
-          if (registeredUser && !findUser.isDeleted ) {
+          if (registeredUser && !findUser.isDeleted) {
             reject([
               findUser,
               jwtGenerate({ userId: findUser.uId }, "secret", {
                 expiresIn: "24H",
               }),
             ]);
-          } else if(!registeredUser  ){
-            
-              resolve(
-                await user.create({
-                  name: name,
-                  email: email,
-                  profilePicture: picture,
-                  language: locale,
-                  isEmailVerified:true,
-                  status:'active'
-                })
-              );
-            }else{
-              res.status(400).send({message:'user deleted'})
-            }
-          
+          } else if (!registeredUser) {
+            resolve(
+              await user.create({
+                name: name,
+                email: email,
+                profilePicture: picture,
+                language: locale,
+                isEmailVerified: true,
+                status: "active",
+              })
+            );
+          } else {
+            res.status(400).send({ message: "user deleted" });
+          }
         });
         saveUserData
           .then((data) => {
@@ -129,31 +126,31 @@ const ssoRegisterAndLogin = async (req, res) => {
       }
     } else if (identify.toLowerCase() === "facebook") {
       let { name, picture, email } = req.body;
+      console.log(req.body, name, email, picture);
       const saveUserData = new Promise(async (resolve, reject) => {
         const findUser = await user.findOne({ email: email });
+        console.log(findUser);
         const registeredUser = findUser !== null ? true : false;
-        if (registeredUser && !findUser.isDeleted) {
+        if (registeredUser && !(findUser && findUser?.isDeleted)) {
           reject([
             findUser,
             jwtGenerate({ userId: findUser.uId }, "secret", {
               expiresIn: "24H",
             }),
           ]);
-        } else if(!registeredUser &&!findUser.isDeleted) {
-            resolve(
-              await user.create({
-                name: name,
-                email: email,
-                profilePicture: picture.data.url,
-                isEmailVerified:true,
-                  status:'active'
-              })
-            );
-         
-        }  else{
-          res.status(400).send({message:'user deleted'})
-       }
-      
+        } else if (!registeredUser && !(findUser && findUser?.isDeleted)) {
+          resolve(
+            await user.create({
+              name: name,
+              email: email,
+              profilePicture: picture.data.url,
+              isEmailVerified: true,
+              status: "active",
+            })
+          );
+        } else {
+          res.status(400).send({ message: "user deleted" });
+        }
       });
       saveUserData
         .then((data) => {
@@ -507,15 +504,19 @@ const deleteMultipleUser = async (req, res) => {
 
 const deleteReviewerPermanently = async (req, res) => {
   try {
-    const userData = await user.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
-   if(userData){
-    res.status(200).json(userData);
-   }else{
-    res.status(400).send({message:'Incorrect user id'});
-   }
+    const userData = await user.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true },
+      { new: true }
+    );
+    if (userData) {
+      res.status(200).json(userData);
+    } else {
+      res.status(400).send({ message: "Incorrect user id" });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
@@ -526,21 +527,27 @@ const deleteMultipleReviewerPermanently = async (req, res) => {
       { _id: { $in: ids } },
       { isDeleted: true }
     );
-    res.status(200).json({result:result,message:`${result.modifiedCount} updated successfully`});
+    res.status(200).json({
+      result: result,
+      message: `${result.modifiedCount} updated successfully`,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
-
 const deleteReviewerTemporarily = async (req, res) => {
   try {
-    const userData = await user.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
+    const userData = await user.findByIdAndUpdate(
+      req.params.id,
+      { status: "inactive" },
+      { new: true }
+    );
     res.status(200).json(userData);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 };
 
@@ -554,5 +561,5 @@ module.exports = {
   deleteMultipleUser,
   deleteReviewerPermanently,
   deleteMultipleReviewerPermanently,
-  deleteReviewerTemporarily
+  deleteReviewerTemporarily,
 };
