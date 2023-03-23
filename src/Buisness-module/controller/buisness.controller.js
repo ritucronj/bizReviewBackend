@@ -335,6 +335,7 @@ const searchBusinessWithReviews = async (req, res) => {
     const businesses = await Business.aggregate([
       {
         $match: {
+          $and:[{isDeleted:false}],
           $or: [
             { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
             { website: { $regex: new RegExp(search, "i") } },
