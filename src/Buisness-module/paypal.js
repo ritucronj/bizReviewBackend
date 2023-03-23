@@ -1,16 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const paypal = require("paypal-rest-sdk");
+// const paypalId = require("@paypal/checkout-server-sdk");
 require("dotenv").config();
-const serverAddr = process.env.SERVER_ADDR;
+const Business = require("./models/business.model");
+const serverAddr = process.env.SERVER_ADDR1;
+const Port = process.env.PORT;
+const SERVER_ADDR1 = process.env.SERVER_ADDR1;
 
 paypal.configure({
   mode: "sandbox",
   client_id: process.env.PAYPAL_CLIENT_ID,
   client_secret: process.env.PAYPAL_CLIENT_SECRET,
 });
-router.get("/subscribe/:plan", function (req, res) {
-  var plan = req.params.plan;
+var uid;
+var date = new Date();
+var planPurchaseDate;
+var planPrice;
+var plan;
+
+router.post("/subscribe/:plan", function (req, res) {
+  plan = req.params.plan;
+  uid = req.body.id;
+  date = new Date();
+  planPurchaseDate = date;
+  planPrice = req.body.price;
   var billingPlanId;
 
   if (
@@ -42,8 +56,8 @@ router.get("/subscribe/:plan", function (req, res) {
       },
     ],
     merchant_preferences: {
-      cancel_url: `${serverAddr}/cancel`,
-      return_url: `${serverAddr}/success`,
+      cancel_url: `http://localhost:${Port}/cancel`,
+      return_url: `http://localhost:${Port}/success`,
       auto_bill_amount: "YES",
       initial_fail_amount_action: "CONTINUE",
       max_fail_attempts: "0",
@@ -114,13 +128,24 @@ router.get("/subscribe/:plan", function (req, res) {
 
               paypal.billingAgreement.create(
                 billingAgreementAttributes,
-                function (error, billingAgreement) {
+                async function (error, billingAgreement) {
                   if (error) {
                     throw error;
                   } else {
                     for (var i = 0; i < billingAgreement.links.length; i++) {
                       if (billingAgreement.links[i].rel === "approval_url") {
+                        // console.log("response", response);
                         res.redirect(billingAgreement.links[i].href);
+                        // const business = await Business.findByIdAndUpdate(
+                        //   uid,
+                        //   {
+                        //     planType: plan,
+                        //     planPurchaseDate: planPurchaseDate,
+                        //     isPlanExpired: false,
+                        //     planPrice: planPrice,
+                        //   },
+                        //   { new: true }
+                        // );
                       }
                     }
                   }
@@ -134,24 +159,149 @@ router.get("/subscribe/:plan", function (req, res) {
   );
 });
 
-router.get("/success", function (req, res) {
+router.get("/success", async function (req, res) {
+  var paymentId = req.query.paymentId;
+  var payerId = req.query.PayerID;
+  console.log(paymentId, payerId);
+  // const request = new paypalId.orders.OrdersGetRequest(orderId);
+
+  // console.log("req in paypal", request);
+  const business = await Business.findByIdAndUpdate(
+    uid,
+    {
+      planType: plan,
+      planPurchaseDate: planPurchaseDate,
+      isPlanExpired: false,
+      planPrice: planPrice,
+    },
+    { new: true }
+  );
+  // console.log("outside", business);
   var token = req.query.token;
   // Execute the billing agreement
   paypal.billingAgreement.execute(
     token,
     {},
-    function (error, billingAgreement) {
+    async function (error, billingAgreement) {
       if (error) {
         throw error;
       } else {
-        res.send("Success");
+        const business = await Business.findByIdAndUpdate(
+          uid,
+          {
+            planType: plan,
+            planPurchaseDate: planPurchaseDate,
+            isPlanExpired: false,
+            planPrice: planPrice,
+          },
+          { new: true }
+        );
+        // console.log("success", business);
+        res.redirect(`${SERVER_ADDR1}/success`);
       }
     }
   );
 });
 
 router.get("/cancel", function (req, res) {
-  res.send("Cancelled");
+  // res.send("Cancelled");
+  res.redirect(`${SERVER_ADDR1}/cancel`);
+});
+
+// new paypal payment
+paypal.configure({
+  mode: "sandbox", // sandbox or live
+  client_id: process.env.PAYPAL_CLIENT_ID,
+  client_secret: process.env.PAYPAL_CLIENT_SECRET,
+});
+var uid;
+var date = new Date();
+var planPurchaseDate;
+var planPrice;
+var plan;
+
+router.post("/subscribe1/:plan", function (req, res) {
+  console.log(req);
+  plan = req.params.plan;
+  uid = req.body.id;
+  date = new Date();
+  planPurchaseDate = date;
+  planPrice = req.body.price;
+  var payment = {
+    intent: "sale",
+    payer: {
+      payment_method: "paypal",
+    },
+    redirect_urls: {
+      return_url: `http://localhost:${Port}/successpaypal`,
+      cancel_url: `http://localhost:${Port}/cancel`,
+    },
+    transactions: [
+      {
+        amount: {
+          total: planPrice,
+          currency: "USD",
+        },
+        description: plan,
+      },
+    ],
+  };
+
+  paypal.payment.create(payment, function (error, payment) {
+    if (error) {
+      console.log(error);
+    } else {
+      for (var i = 0; i < payment.links.length; i++) {
+        if (payment.links[i].rel === "approval_url") {
+          // Redirect the user to the PayPal approval URL
+          console.log(payment.links[i].href);
+          res.redirect(payment.links[i].href);
+        }
+      }
+    }
+  });
+});
+
+router.get("/successpaypal", async function (req, res) {
+  var paymentId = req.query.paymentId;
+  var payerId = req.query.PayerID;
+
+  var execute_payment = {
+    payer_id: payerId,
+    transactions: [
+      {
+        amount: {
+          total: planPrice,
+          currency: "USD",
+        },
+      },
+    ],
+  };
+
+  paypal.payment.execute(
+    paymentId,
+    execute_payment,
+    async function (error, payment) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(payment.id); // Payment ID
+        const business = await Business.findByIdAndUpdate(
+          uid,
+          {
+            planType: plan,
+            planPurchaseDate: planPurchaseDate,
+            isPlanExpired: false,
+            planPrice: planPrice,
+            paymentId: payment.id,
+          },
+          { new: true }
+        );
+        // res.send("Payment success");
+        res.redirect(`${SERVER_ADDR1}/success`);
+      }
+    }
+  );
 });
 
 module.exports = router;

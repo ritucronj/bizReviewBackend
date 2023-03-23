@@ -10,6 +10,7 @@ let price;
 let uid;
 
 router.post("/create-checkout-session", async (req, res) => {
+  // console.log("payment api", req.body);
   uid = req.body.id;
   name = req.body.name;
   price = req.body.price;
@@ -29,38 +30,49 @@ router.post("/create-checkout-session", async (req, res) => {
       },
     ],
     mode: "payment",
-    success_url: `${process.env.SERVER_ADDR}/success`,
-    cancel_url: `${process.env.SERVER_ADDR}/cancel`,
+    success_url: `http://localhost:${process.env.PORT}/success1`,
+    cancel_url: `http://localhost:${process.env.PORT}/cancel1`,
   });
 
   res.json({ data: session });
 });
 
-router.post("/webhook", async (req, res) => {
+router.get("/success1", async (req, res) => {
+  // console.log("webhook");
   const event = req.body;
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data;
-    const date = new Date();
-
-    const payload = {
+  console.log(event);
+  const date = new Date();
+  stripe.charges.create(
+    {
+      amount: price, // Amount in cents
+      currency: "inr", // Currency in ISO format
+      source: "tok_visa", // Token representing the credit card to charge
+    },
+    async function (err, charge) {
+      // console.log(err, charge);
+      if (err) {
+        console.error(err);
+      } else {
+        console.log("Payment successful! Payment ID: " + charge.id);
+      }
+    }
+  );
+  const business = await Business.findByIdAndUpdate(
+    uid,
+    {
       planType: name,
       planPurchaseDate: date,
       isPlanExpired: false,
-    };
-
-    const updateData = await Business.findOneAndUpdate(
-      { uId: uid },
-      { $set: payload },
-      {
-        new: true,
-      }
-    );
-
-    res.json(session);
-  } else {
-    res.json({ received: false });
-  }
+      planPrice: price,
+      // paymentId: charge.id,
+    },
+    { new: true }
+  );
+  res.redirect(`${process.env.SERVER_ADDR1}/success`);
+});
+router.get("/cancel1", function (req, res) {
+  // res.send("Cancelled");
+  res.redirect(`${process.env.SERVER_ADDR1}/cancel`);
 });
 
 module.exports = router;
