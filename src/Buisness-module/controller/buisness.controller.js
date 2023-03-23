@@ -379,23 +379,23 @@ const searchSubscriptions = async (req, res) => {
     };
   }
 
-  if(fromDate && toDate){
-    query.planPurchaseDate=   {
-        $gte: new Date(fromDate) ,
-        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
-    }
+  if (fromDate && toDate) {
+    query.planPurchaseDate = {
+      $gte: new Date(fromDate),
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
+    };
   }
 
-  if(fromDate && !toDate){
-    query.planPurchaseDate=   {
-        $gte: new Date(fromDate) 
-    }
+  if (fromDate && !toDate) {
+    query.planPurchaseDate = {
+      $gte: new Date(fromDate),
+    };
   }
 
-  if(!fromDate && toDate){
-    query.planPurchaseDate=   {
-        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
-    }
+  if (!fromDate && toDate) {
+    query.planPurchaseDate = {
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
+    };
   }
   try {
     const businesses = await Business.find(query)
@@ -579,10 +579,34 @@ const searchReviews = async (req, res) => {
         .populate("createdBy");
       return res.status(200).send(reviews);
     }
-    if (name && rating) {
+    if (name && rating && startDate && !endDate) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
-        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+        $and: [
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+          { createdAt: { $gte: new Date(startDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && rating && !startDate && endDate) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+          { createdAt: { $lte: new Date(endDate) } },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -615,10 +639,14 @@ const searchReviews = async (req, res) => {
         .populate("createdBy");
       return res.status(200).send(reviews);
     }
-    if (name && rating) {
-      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+    if (email && rating && startDate && !endDate) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
-        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+        $and: [
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+          { createdAt: { $gte: new Date(startDate) } },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -631,6 +659,141 @@ const searchReviews = async (req, res) => {
         .populate("createdBy");
       return res.status(200).send(reviews);
     }
+    if (email && rating && !startDate && endDate) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+          { createdAt: { $lte: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (rating && startDate && !endDate) {
+      const reviews = await Review.find({
+        $and: [
+          { rating: parseInt(rating) },
+          { createdAt: { $gte: new Date(startDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (rating && !startDate && endDate) {
+      const reviews = await Review.find({
+        $and: [
+          { rating: parseInt(rating) },
+          { createdAt: { $lte: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+
+    if (name && startDate && !endDate) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $gte: new Date(startDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (name && !startDate && endDate) {
+      const findUser = await User.findOne({ name: new RegExp(name, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $lte: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+
+    if (email && startDate && !endDate) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $gte: new Date(startDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (email && !startDate && endDate) {
+      const findUser = await User.findOne({ email: new RegExp(email, "i") });
+      const reviews = await Review.find({
+        $and: [
+          { createdBy: findUser },
+          { createdAt: { $lte: new Date(endDate) } },
+        ],
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+
     if (name && startDate && endDate) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
@@ -650,22 +813,7 @@ const searchReviews = async (req, res) => {
         .populate("createdBy");
       return res.status(200).send(reviews);
     }
-    if (name && rating) {
-      const findUser = await User.findOne({ name: new RegExp(name, "i") });
-      const reviews = await Review.find({
-        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
-      })
-        .populate("businessId")
-        .populate({
-          path: "replies",
-          populate: {
-            path: "createdBy",
-            model: "Business",
-          },
-        })
-        .populate("createdBy");
-      return res.status(200).send(reviews);
-    }
+
     if (email && startDate && endDate) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
@@ -729,7 +877,7 @@ const searchReviews = async (req, res) => {
     if (startDate && endDate) {
       filter.createdAt = { $gte: new Date(startDate), $lt: new Date(endDate) };
     }
-    if (startDate || endDate) {
+    if (startDate && endDate) {
       const reviews = await Review.find(filter)
         .populate("businessId")
         .populate({
@@ -785,6 +933,36 @@ const searchReviews = async (req, res) => {
         })
         .populate("createdBy");
 
+      return res.status(200).send(reviews);
+    }
+    if (startDate) {
+      const reviews = await Review.find({
+        createdAt: { $gte: new Date(startDate) },
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
+      return res.status(200).send(reviews);
+    }
+    if (endDate) {
+      const reviews = await Review.find({
+        createdAt: { $lte: new Date(endDate) },
+      })
+        .populate("businessId")
+        .populate({
+          path: "replies",
+          populate: {
+            path: "createdBy",
+            model: "Business",
+          },
+        })
+        .populate("createdBy");
       return res.status(200).send(reviews);
     }
     if (!(name && email && startDate && endDate && rating)) {
