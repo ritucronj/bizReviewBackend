@@ -36,7 +36,6 @@ const createCompanyReview = async (req, res) => {
 
     // Save the review to the database
     const savedReview = await reviews.save();
-
     // Return the saved review as the response
     res.status(201).json(savedReview);
   } catch (err) {
@@ -117,12 +116,12 @@ const searchAllReviewsByUser = async (req, res) => {
   if (fromDate && !toDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
   if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
-    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate()+1);;
+    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate());;
   }
   if(fromDate && toDate){
     filters.dateOfExperience = { 
       $gte: new Date(fromDate),
-      $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1) 
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate()) 
      };
   }
   if (search) {
@@ -134,7 +133,7 @@ const searchAllReviewsByUser = async (req, res) => {
 
     filters.businessId= findBusiness && findBusiness._id.toString();
   }
-  if (rating) filters.rating =  Number(rating) ;
+  if (rating) filters.rating =  rating ? Number(rating) : 0 ;
   try {
     const reviews = await review.find(filters)
     .populate("businessId")

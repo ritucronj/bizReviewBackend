@@ -54,10 +54,10 @@ const createBusinessByUser = async (req, res) => {
       req.body.createdBy = req.params.userId;
       // Create a new business object with the request body
 
-      const businessFound= await Business.findOne({website:req.body.website})
+      const businessFound= Business.findOne({website:req.body.website})
       console.log('business',businessFound)
        if(!businessFound){
-        const business =  new Business(req.body);
+        const business = await new Business(req.body);
 
         // Save the business object to the database
         const savedBusiness = await business.save();
@@ -337,7 +337,9 @@ const searchBusinessWithReviews = async (req, res) => {
         $match: {
           $or: [
             { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
-            { website: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+            { website: { $regex: new RegExp(search, "i") } },
+            { email: { $regex: new RegExp(search, "i") } },
+             // case-insensitive search by website
           ],
         },
       },
