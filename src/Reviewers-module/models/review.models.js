@@ -41,8 +41,6 @@ const reviews = new mongoose.Schema(
       {
         id: {
           type: String,
-          required: true,
-          unique: true,
         },
         createdBy: {
           type: mongoose.Schema.Types.ObjectId,
