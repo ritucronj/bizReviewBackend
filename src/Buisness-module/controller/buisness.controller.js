@@ -350,6 +350,9 @@ const searchBusinessWithReviews = async (req, res) => {
           localField: "_id",
           foreignField: "businessId",
           as: "reviews",
+          pipeline: [
+            { $match: { $expr: { $and: [  { $eq: [ "$isDeleted", false ] } ] } } }
+          ],
         },
       },
     ]);
