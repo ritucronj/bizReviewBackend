@@ -18,6 +18,9 @@ const businessSchema = new mongoose.Schema(
      type:Boolean,
      default:true
     },
+    paymentId:{
+      type:String,
+     },
     website: {
       type: String,
       trim: true,
