@@ -14,9 +14,7 @@ const {
 } = require("../controller/user.controller");
 const router = express.Router();
 
-router.get("/hello", (req, res) => {
-  res.send({ data: "hello" });
-});
+// const authenticate= require('../../utils/auth.middleware');
 
 router.post("/register", registerUserWithEmail);
 router.post("/registerSSO", ssoRegisterAndLogin);
