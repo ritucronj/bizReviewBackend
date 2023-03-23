@@ -167,10 +167,10 @@ const setBusinessPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const securePass = await hashPassword(password);
-    const setPass = await Business.findOneAndUpdate(req.params.id, {
+    const setPass = await Business.findOneAndUpdate({uId:req.params.id}, {
       password: securePass,
     });
-    return res.send({ message: `Password added successfully.` });
+    return res.send({ message: `Password added successfully.`,set:setPass });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
@@ -178,12 +178,15 @@ const setBusinessPassword = async (req, res) => {
 };
 
 const loginBusiness = async (req, res) => {
+  console.log('body',req.body)
   try {
     const { email, password } = req.body;
     const userData = await Business.findOne({ email, isDeleted: false });
+    console.log('helloo',password,userData)
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+   
     const isPasswordValid = await bcrypt.compare(password, userData.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });

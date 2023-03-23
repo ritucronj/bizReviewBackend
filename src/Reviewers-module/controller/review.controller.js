@@ -16,7 +16,7 @@ const createCompanyReview = async (req, res) => {
       dateOfExperience,
       status,
       isDeleted,
-      replies,
+      // replies,
     } = req.body;
     const createdBy = req.params.Id;
     const businessId = req.params.businessId;
@@ -31,7 +31,7 @@ const createCompanyReview = async (req, res) => {
       dateOfExperience,
       status,
       isDeleted,
-      replies,
+      // replies,
     });
 
     // Save the review to the database
