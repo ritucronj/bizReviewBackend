@@ -265,6 +265,7 @@ const searchBusinessRequestsByReviewer = async (req, res) => {
 
 const searchApprovedBusiness = async (req, res) => {
   const { search, page, limit, fromDate, toDate } = req.query; // the search query parameter and pagination parameters
+  console.log('query',req.query)
   let query = {
     $and: [
       { isDeleted: false },
@@ -272,36 +273,41 @@ const searchApprovedBusiness = async (req, res) => {
       { rejected: false },
       {
         $or: [
-          { email: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
-          { firstName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+          { website: { $regex: new RegExp(search, "i") } },
+          { companyName: { $regex: new RegExp(search, "i") } },
+          { email: { $regex: new RegExp(search, "i") } },
         ],
       },
     ],
   };
+
+  
   if (fromDate && toDate) {
     query.createdAt = {
-      createdAt: {
+      // createdAt: {
         $gte: new Date(fromDate),
-        $lte: new Date(toDate),
-      },
+        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      // },
     };
   }
 
   if (fromDate && !toDate) {
     query.createdAt = {
-      createdAt: {
+      // createdAt: {
         $gte: new Date(fromDate),
-      },
+      // },
     };
   }
 
   if (!fromDate && toDate) {
     query.createdAt = {
-      createdAt: {
-        $lte: new Date(toDate),
-      },
+      // createdAt: {
+        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      // },
     };
   }
+
+  console.log('query',query)
 
   try {
     const businesses = await Business.find(query)

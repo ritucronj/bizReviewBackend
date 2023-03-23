@@ -48,6 +48,7 @@ router.post("/verifyotp", async (req, res) => {
        await user.updateOne(
         { email: email },
         { $set: { status: 'active', isEmailVerified: true } })
+        console.log('user',user)
       res.status(200).send({message:"OTP verified successfully",token:token,user:user});
     } else {
       res.status(400).send("OTP verification failed");
