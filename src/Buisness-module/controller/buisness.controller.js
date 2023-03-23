@@ -53,13 +53,20 @@ const createBusinessByUser = async (req, res) => {
       req.body.createdByUser = true;
       req.body.createdBy = req.params.userId;
       // Create a new business object with the request body
-      const business = new Business(req.body);
 
-      // Save the business object to the database
-      const savedBusiness = await business.save();
+      const businessFound= await Business.findOne({website:req.body.website})
+      console.log('business',businessFound)
+       if(!businessFound){
+        const business =  new Business(req.body);
 
-      // Send the saved business object in the response
-      res.status(201).json(savedBusiness);
+        // Save the business object to the database
+        const savedBusiness = await business.save();
+  
+        // Send the saved business object in the response
+        res.status(201).json(savedBusiness);
+       }else{
+        res.status(400).send("Already Exists");
+       }
     } else {
       res.status(500).send("Server Error");
     }
