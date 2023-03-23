@@ -53,13 +53,20 @@ const createBusinessByUser = async (req, res) => {
       req.body.createdByUser = true;
       req.body.createdBy = req.params.userId;
       // Create a new business object with the request body
-      const business = new Business(req.body);
 
-      // Save the business object to the database
-      const savedBusiness = await business.save();
+      const businessFound= Business.findOne({website:req.body.website})
+      console.log('business',businessFound)
+       if(!businessFound){
+        const business = await new Business(req.body);
 
-      // Send the saved business object in the response
-      res.status(201).json(savedBusiness);
+        // Save the business object to the database
+        const savedBusiness = await business.save();
+  
+        // Send the saved business object in the response
+        res.status(201).json(savedBusiness);
+       }else{
+        res.status(400).send("Already Exists");
+       }
     } else {
       res.status(500).send("Server Error");
     }
@@ -160,10 +167,10 @@ const setBusinessPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const securePass = await hashPassword(password);
-    const setPass = await Business.findOneAndUpdate(req.params.id, {
+    const setPass = await Business.findOneAndUpdate({uId:req.params.id}, {
       password: securePass,
     });
-    return res.send({ message: `Password added successfully.` });
+    return res.send({ message: `Password added successfully.`,set:setPass });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
@@ -171,12 +178,15 @@ const setBusinessPassword = async (req, res) => {
 };
 
 const loginBusiness = async (req, res) => {
+  console.log('body',req.body)
   try {
     const { email, password } = req.body;
     const userData = await Business.findOne({ email, isDeleted: false });
+    console.log('helloo',password,userData)
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+   
     const isPasswordValid = await bcrypt.compare(password, userData.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -265,6 +275,7 @@ const searchBusinessRequestsByReviewer = async (req, res) => {
 
 const searchApprovedBusiness = async (req, res) => {
   const { search, page, limit, fromDate, toDate } = req.query; // the search query parameter and pagination parameters
+  console.log('query',req.query)
   let query = {
     $and: [
       { isDeleted: false },
@@ -272,36 +283,41 @@ const searchApprovedBusiness = async (req, res) => {
       { rejected: false },
       {
         $or: [
-          { email: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
-          { firstName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+          { website: { $regex: new RegExp(search, "i") } },
+          { companyName: { $regex: new RegExp(search, "i") } },
+          { email: { $regex: new RegExp(search, "i") } },
         ],
       },
     ],
   };
+
+  
   if (fromDate && toDate) {
     query.createdAt = {
-      createdAt: {
+      // createdAt: {
         $gte: new Date(fromDate),
-        $lte: new Date(toDate),
-      },
+        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      // },
     };
   }
 
   if (fromDate && !toDate) {
     query.createdAt = {
-      createdAt: {
+      // createdAt: {
         $gte: new Date(fromDate),
-      },
+      // },
     };
   }
 
   if (!fromDate && toDate) {
     query.createdAt = {
-      createdAt: {
-        $lte: new Date(toDate),
-      },
+      // createdAt: {
+        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      // },
     };
   }
+
+  console.log('query',query)
 
   try {
     const businesses = await Business.find(query)
@@ -322,9 +338,12 @@ const searchBusinessWithReviews = async (req, res) => {
     const businesses = await Business.aggregate([
       {
         $match: {
+          $and:[{isDeleted:false}],
           $or: [
             { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
-            { website: { $regex: new RegExp(search, "i") } }, // case-insensitive search by website
+            { website: { $regex: new RegExp(search, "i") } },
+            { email: { $regex: new RegExp(search, "i") } },
+             // case-insensitive search by website
           ],
         },
       },
@@ -334,6 +353,9 @@ const searchBusinessWithReviews = async (req, res) => {
           localField: "_id",
           foreignField: "businessId",
           as: "reviews",
+          pipeline: [
+            { $match: { $expr: { $and: [  { $eq: [ "$isDeleted", false ] } ] } } }
+          ],
         },
       },
     ]);
