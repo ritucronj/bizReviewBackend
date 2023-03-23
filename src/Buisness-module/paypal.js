@@ -233,8 +233,8 @@ router.post("/subscribe1/:plan", function (req, res) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: "http://localhost:8080/successpaypal",
-      cancel_url: "http://localhost:8080/cancel",
+      return_url: `http://localhost:${Port}/successpaypal`,
+      cancel_url: `http://localhost:${Port}/cancel`,
     },
     transactions: [
       {
@@ -271,7 +271,7 @@ router.get("/successpaypal", async function (req, res) {
     transactions: [
       {
         amount: {
-          total: "10.00",
+          total: planPrice,
           currency: "USD",
         },
       },
@@ -293,10 +293,11 @@ router.get("/successpaypal", async function (req, res) {
             planPurchaseDate: planPurchaseDate,
             isPlanExpired: false,
             planPrice: planPrice,
+            paymentId: payment.id,
           },
           { new: true }
         );
-        res.send("Payment success");
+        // res.send("Payment success");
         res.redirect(`${SERVER_ADDR1}/success`);
       }
     }

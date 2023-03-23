@@ -10,7 +10,7 @@ let price;
 let uid;
 
 router.post("/create-checkout-session", async (req, res) => {
-  console.log("payment api", req.body);
+  // console.log("payment api", req.body);
   uid = req.body.id;
   name = req.body.name;
   price = req.body.price;
@@ -38,7 +38,7 @@ router.post("/create-checkout-session", async (req, res) => {
 });
 
 router.get("/success1", async (req, res) => {
-  console.log("webhook");
+  // console.log("webhook");
   const event = req.body;
   console.log(event);
   const date = new Date();
@@ -48,7 +48,8 @@ router.get("/success1", async (req, res) => {
       currency: "inr", // Currency in ISO format
       source: "tok_visa", // Token representing the credit card to charge
     },
-    function (err, charge) {
+    async function (err, charge) {
+      // console.log(err, charge);
       if (err) {
         console.error(err);
       } else {
@@ -63,6 +64,7 @@ router.get("/success1", async (req, res) => {
       planPurchaseDate: date,
       isPlanExpired: false,
       planPrice: price,
+      // paymentId: charge.id,
     },
     { new: true }
   );
