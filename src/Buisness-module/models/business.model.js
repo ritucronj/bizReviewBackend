@@ -20,6 +20,7 @@ const businessSchema = new mongoose.Schema(
     },
     paymentId:{
       type:String,
+      default: "",
      },
     website: {
       type: String,

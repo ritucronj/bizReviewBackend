@@ -46,16 +46,18 @@ app.listen(port, () => {
 cron.schedule('0 0 * * *', async () => {
   try {
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30 );
 
     const businessesToUpdate = await Business.find({
       planPurchaseDate: { $lt: thirtyDaysAgo },
-      isPlanExpired: { $ne: true }
+      isPlanExpired: false
     });
+
 
     businessesToUpdate.forEach(async business => {
       business.isPlanExpired = true;
       business.planType='free';
+      business.paymentId= "";
       await business.save();
     });
 
