@@ -3,21 +3,14 @@ const user = require("../models/user.models");
 const { statusCodes } = require("../services/statusCodes");
 const { updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require("uuid");
-const businessModel=require('../../Buisness-module/models/business.model');
+const businessModel = require("../../Buisness-module/models/business.model");
 const { find } = require("../models/review.models");
 
 const createCompanyReview = async (req, res) => {
   try {
     // Get the review data from the request body
-    const {
-      title,
-      rating,
-      description,
-      dateOfExperience,
-      status,
-      isDeleted,
-      replies,
-    } = req.body;
+    const { title, rating, description, dateOfExperience, status, isDeleted } =
+      req.body;
     const createdBy = req.params.Id;
     const businessId = req.params.businessId;
 
@@ -31,7 +24,6 @@ const createCompanyReview = async (req, res) => {
       dateOfExperience,
       status,
       isDeleted,
-      replies,
     });
 
     // Save the review to the database
@@ -44,40 +36,6 @@ const createCompanyReview = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-
-// const readReviewById = async (req, res) => {
-//   try {
-//     let reviewId = req.params.review;
-//     let userId = req.params.user;
-//     const checkReview = new Promise(async (resolve, reject) => {
-//       const findReview = await review.findOne(
-//         {
-//           $and: [{ createdBy: userId }, { "reviews.uId": reviewId }],
-//         },
-//         {
-//           "reviews.$": 1,
-//         }
-//       );
-//       if (findReview.reviews[0].isDeleted === true)
-//         reject(new Error("Something went wrong"));
-//       const error = findReview === null ? true : false;
-//       if (error) reject(new Error("No Review Found"));
-//       resolve(findReview);
-//     });
-//     checkReview
-//       .then((result) => {
-//         return res.status(statusCodes[200].value).send({ data: result });
-//       })
-//       .catch((err) => {
-//         return res.status(statusCodes[400].value).send({ msg: err.message });
-//       });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(statusCodes[500].value)
-//       .send({ status: statusCodes[500].message, msg: error.message });
-//   }
-// };
 
 const readAllReviews = async (req, res) => {
   try {
@@ -114,31 +72,34 @@ const searchAllReviewsByUser = async (req, res) => {
   const userId = req.params.userId;
   const { fromDate, toDate, search, rating } = req.query;
   const filters = { createdBy: userId, isDeleted: false };
-  if (fromDate && !toDate) filters.dateOfExperience = { $gte: new Date(fromDate) };
+  if (fromDate && !toDate)
+    filters.dateOfExperience = { $gte: new Date(fromDate) };
   if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
-    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate()+1);;
+    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(
+      new Date(toDate).getDate() + 1
+    );
   }
-  if(fromDate && toDate){
-    filters.dateOfExperience = { 
+  if (fromDate && toDate) {
+    filters.dateOfExperience = {
       $gte: new Date(fromDate),
-      $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1) 
-     };
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
+    };
   }
   if (search) {
     const regex = new RegExp(search, "i");
-    const findBusiness = await businessModel.findOne({$or : [
-      { companyName: regex }
-    ] });
+    const findBusiness = await businessModel.findOne({
+      $or: [{ companyName: regex }],
+    });
 
-
-    filters.businessId= findBusiness && findBusiness._id.toString();
+    filters.businessId = findBusiness && findBusiness._id.toString();
   }
-  if (rating) filters.rating =  Number(rating) ;
+  if (rating) filters.rating = Number(rating);
   try {
-    const reviews = await review.find(filters)
-    .populate("businessId")
-    .populate('createdBy');
+    const reviews = await review
+      .find(filters)
+      .populate("businessId")
+      .populate("createdBy");
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
