@@ -434,7 +434,7 @@ const searchSubscriptions = async (req, res) => {
 const getBusiness = async (req, res) => {
   try {
     const id = req.params.id;
-    const userData = await Business.findOne({ uId: id });
+    const userData = await Business.findOne({ id });
 
     if (!userData || userData.isDeleted === true) {
       return res.status(404).send({ message: `User not found.` });
@@ -459,24 +459,21 @@ const getBusinessById = async (req, res) => {
 };
 
 const updateBusinessProfile = async (req, res) => {
+  console.log('test',req.params.id)
   try {
     const id = req.params.id;
-
-    const { error } = updateBusinessValidation(req.body);
-    if (error) {
-      return res.status(400).send({ message: error.details[0].message });
-    }
     if (req.body.password) {
       req.body.password = await hashPassword(req.body.password);
     }
-    const updateData = await Business.findOneAndUpdate(
-      { uId: id },
-      { $set: req.body },
+    const updateData = await Business.findByIdAndUpdate(
+      id,
+     req.body ,
       {
         new: true,
       }
     );
-    return res?.send({ message: `Profile updated successfully.` });
+    console.log('updateData',updateData)
+    return res?.status(200).send({ message: `Profile updated successfully.`,business:updateData });
   } catch (error) {
     return res?.status(500).send({ messgae: `Internal Server Error` });
   }
