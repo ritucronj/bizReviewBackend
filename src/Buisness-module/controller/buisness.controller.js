@@ -444,6 +444,19 @@ const getBusiness = async (req, res) => {
     return res.status(500).send({ messgae: `Internal Server Error` });
   }
 };
+const getBusinessById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await Business.findOne({ _id: id });
+
+    if (!userData || userData.isDeleted === true) {
+      return res.status(404).send({ message: `User not found.` });
+    }
+    return res.send({ userData });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
 
 const updateBusinessProfile = async (req, res) => {
   try {
@@ -1107,4 +1120,5 @@ module.exports = {
   deleteSubscription,
   deleteMultipleSubscription,
   contactUser,
+  getBusinessById,
 };
