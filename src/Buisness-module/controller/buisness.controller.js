@@ -961,8 +961,10 @@ const searchReviews = async (req, res) => {
         $and: [
           { isDeleted: false },
           {
-            $gte: new Date(startDate),
-            $lt: new Date(endDate),
+            dateOfExperience: {
+              $gte: new Date(startDate),
+              $lt: new Date(endDate),
+            },
           },
         ],
       })
@@ -1031,7 +1033,7 @@ const searchReviews = async (req, res) => {
     if (startDate) {
       const reviews = await Review.find({
         $and: [
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
           { isDeleted: false },
         ],
       })
@@ -1050,7 +1052,7 @@ const searchReviews = async (req, res) => {
       const reviews = await Review.find({
         $and: [
           {
-            createdAt: { $lte: new Date(endDate) },
+            dateOfExperience: { $lte: new Date(endDate) },
           },
           { isDeleted: false },
         ],
