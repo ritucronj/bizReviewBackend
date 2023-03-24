@@ -26,6 +26,7 @@ const {
   deleteSubscription,
   deleteMultipleSubscription,
   contactUser,
+  getBusinessById,
 } = require("../controller/buisness.controller");
 const router = express.Router();
 
@@ -83,5 +84,6 @@ router.put("/reset-password", resetPass);
 
 router.post("/reviews/:id/reply", reviewReply);
 router.post("/contactUser", contactUser);
+router.get("/getBusinessById/:id", getBusinessById);
 
 module.exports = router;
