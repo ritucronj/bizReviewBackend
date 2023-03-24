@@ -5,10 +5,10 @@ const { statusCodes } = require("../utils/statusCodes");
 const dashboard = async (req, res) => {
     try {
         const reviewerCount = new Promise(async (resolve, reject) => {
-            resolve(await reviewer.find().count());
+            resolve(await reviewer.find({isDeleted:false}).count());
         });
         const buisnessCount = new Promise(async (resolve, reject) => {
-            resolve(await buisness.find().count());
+            resolve(await buisness.find({isDeleted:false}).count());
         });
         Promise.allSettled([reviewerCount, buisnessCount])
             .then((val) => {
