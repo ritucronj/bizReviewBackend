@@ -342,7 +342,7 @@ const searchBusinessWithReviews = async (req, res) => {
     const businesses = await Business.aggregate([
       {
         $match: {
-          $and: [{ isDeleted: false }],
+          $and: [{ isDeleted: false }, { isApproved: true }],
           $or: [
             { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
             { website: { $regex: new RegExp(search, "i") } },
@@ -463,7 +463,7 @@ const getBusinessById = async (req, res) => {
 };
 
 const updateBusinessProfile = async (req, res) => {
-  console.log("test", req.params.id);
+  console.log("test", req.body);
   try {
     const id = req.params.id;
     if (req.body.password) {
