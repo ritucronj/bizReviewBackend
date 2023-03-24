@@ -401,23 +401,23 @@ const searchSubscriptions = async (req, res) => {
     };
   }
 
-  if(fromDate && toDate){
-    query.planPurchaseDate=   {
-        $gte: new Date(fromDate) ,
-        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
-    }
+  if (fromDate && toDate) {
+    query.planPurchaseDate = {
+      $gte: new Date(fromDate),
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
+    };
   }
 
-  if(fromDate && !toDate){
-    query.planPurchaseDate=   {
-        $gte: new Date(fromDate) 
-    }
+  if (fromDate && !toDate) {
+    query.planPurchaseDate = {
+      $gte: new Date(fromDate),
+    };
   }
 
-  if(!fromDate && toDate){
-    query.planPurchaseDate=   {
-        $lte:  new Date(toDate).setDate(new Date(toDate).getDate()+1)  ,
-    }
+  if (!fromDate && toDate) {
+    query.planPurchaseDate = {
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
+    };
   }
   try {
     const businesses = await Business.find(query)
@@ -435,6 +435,19 @@ const getBusiness = async (req, res) => {
   try {
     const id = req.params.id;
     const userData = await Business.findOne({ uId: id });
+
+    if (!userData || userData.isDeleted === true) {
+      return res.status(404).send({ message: `User not found.` });
+    }
+    return res.send({ userData });
+  } catch (error) {
+    return res.status(500).send({ messgae: `Internal Server Error` });
+  }
+};
+const getBusinessById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userData = await Business.findOne({ _id: id });
 
     if (!userData || userData.isDeleted === true) {
       return res.status(404).send({ message: `User not found.` });
@@ -929,4 +942,5 @@ module.exports = {
   deleteSubscription,
   deleteMultipleSubscription,
   contactUser,
+  getBusinessById,
 };
