@@ -170,7 +170,7 @@ const setBusinessPassword = async (req, res) => {
     const setPass = await Business.findOneAndUpdate({uId:req.params.id}, {
       password: securePass,
     });
-    return res.send({ message: `Password added successfully.`,set:setPass });
+    return res.send({ message: `Password added successfully.`,user:setPass });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
