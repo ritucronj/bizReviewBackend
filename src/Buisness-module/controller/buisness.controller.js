@@ -438,7 +438,7 @@ const searchSubscriptions = async (req, res) => {
 const getBusiness = async (req, res) => {
   try {
     const id = req.params.id;
-    const userData = await Business.findOne({ id });
+    const userData = await Business.findOne({ _id: id });
 
     if (!userData || userData.isDeleted === true) {
       return res.status(404).send({ message: `User not found.` });
