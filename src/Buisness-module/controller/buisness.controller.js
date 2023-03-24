@@ -54,19 +54,21 @@ const createBusinessByUser = async (req, res) => {
       req.body.createdBy = req.params.userId;
       // Create a new business object with the request body
 
-      const businessFound= await Business.findOne({website:req.body.website})
-      console.log('business',businessFound)
-       if(!businessFound){
+      const businessFound = await Business.findOne({
+        website: req.body.website,
+      });
+      console.log("business", businessFound);
+      if (!businessFound) {
         const business = await new Business(req.body);
 
         // Save the business object to the database
         const savedBusiness = await business.save();
-  
+
         // Send the saved business object in the response
         res.status(201).json(savedBusiness);
-       }else{
+      } else {
         res.status(400).send("Already Exists");
-       }
+      }
     } else {
       res.status(500).send("Server Error");
     }
@@ -167,10 +169,13 @@ const setBusinessPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const securePass = await hashPassword(password);
-    const setPass = await Business.findOneAndUpdate({uId:req.params.id}, {
-      password: securePass,
-    });
-    return res.send({ message: `Password added successfully.`,user:setPass });
+    const setPass = await Business.findOneAndUpdate(
+      { uId: req.params.id },
+      {
+        password: securePass,
+      }
+    );
+    return res.send({ message: `Password added successfully.`, user: setPass });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ messgae: `Internal Server Error` });
@@ -178,15 +183,15 @@ const setBusinessPassword = async (req, res) => {
 };
 
 const loginBusiness = async (req, res) => {
-  console.log('body',req.body)
+  console.log("body", req.body);
   try {
     const { email, password } = req.body;
     const userData = await Business.findOne({ email, isDeleted: false });
-    console.log('helloo',password,userData)
+    console.log("helloo", password, userData);
     if (!userData) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-   
+
     const isPasswordValid = await bcrypt.compare(password, userData.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -275,7 +280,7 @@ const searchBusinessRequestsByReviewer = async (req, res) => {
 
 const searchApprovedBusiness = async (req, res) => {
   const { search, page, limit, fromDate, toDate } = req.query; // the search query parameter and pagination parameters
-  console.log('query',req.query)
+  console.log("query", req.query);
   let query = {
     $and: [
       { isDeleted: false },
@@ -291,12 +296,11 @@ const searchApprovedBusiness = async (req, res) => {
     ],
   };
 
-  
   if (fromDate && toDate) {
     query.createdAt = {
       // createdAt: {
-        $gte: new Date(fromDate),
-        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      $gte: new Date(fromDate),
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
       // },
     };
   }
@@ -304,7 +308,7 @@ const searchApprovedBusiness = async (req, res) => {
   if (fromDate && !toDate) {
     query.createdAt = {
       // createdAt: {
-        $gte: new Date(fromDate),
+      $gte: new Date(fromDate),
       // },
     };
   }
@@ -312,12 +316,12 @@ const searchApprovedBusiness = async (req, res) => {
   if (!fromDate && toDate) {
     query.createdAt = {
       // createdAt: {
-        $lte: new Date(toDate).setDate(new Date(toDate).getDate()+1),
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate() + 1),
       // },
     };
   }
 
-  console.log('query',query)
+  console.log("query", query);
 
   try {
     const businesses = await Business.find(query)
@@ -338,12 +342,12 @@ const searchBusinessWithReviews = async (req, res) => {
     const businesses = await Business.aggregate([
       {
         $match: {
-          $and:[{isDeleted:false}],
+          $and: [{ isDeleted: false }],
           $or: [
             { companyName: { $regex: new RegExp(search, "i") } }, // case-insensitive search by companyName
             { website: { $regex: new RegExp(search, "i") } },
             { email: { $regex: new RegExp(search, "i") } },
-             // case-insensitive search by website
+            // case-insensitive search by website
           ],
         },
       },
@@ -354,7 +358,7 @@ const searchBusinessWithReviews = async (req, res) => {
           foreignField: "businessId",
           as: "reviews",
           pipeline: [
-            { $match: { $expr: { $and: [  { $eq: [ "$isDeleted", false ] } ] } } }
+            { $match: { $expr: { $and: [{ $eq: ["$isDeleted", false] }] } } },
           ],
         },
       },
@@ -459,21 +463,19 @@ const getBusinessById = async (req, res) => {
 };
 
 const updateBusinessProfile = async (req, res) => {
-  console.log('test',req.params.id)
+  console.log("test", req.params.id);
   try {
     const id = req.params.id;
     if (req.body.password) {
       req.body.password = await hashPassword(req.body.password);
     }
-    const updateData = await Business.findByIdAndUpdate(
-      id,
-     req.body ,
-      {
-        new: true,
-      }
-    );
-    console.log('updateData',updateData)
-    return res?.status(200).send({ message: `Profile updated successfully.`,business:updateData });
+    const updateData = await Business.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    console.log("updateData", updateData);
+    return res
+      ?.status(200)
+      .send({ message: `Profile updated successfully.`, business: updateData });
   } catch (error) {
     return res?.status(500).send({ messgae: `Internal Server Error` });
   }
@@ -595,9 +597,15 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+          {
+            dateOfExperience: {
+              $gte: new Date(startDate),
+              $lt: new Date(endDate),
+            },
+          },
         ],
       })
         .populate("businessId")
@@ -615,9 +623,10 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
         ],
       })
         .populate("businessId")
@@ -635,9 +644,10 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $lte: new Date(endDate) } },
+          { dateOfExperience: { $lte: new Date(endDate) } },
         ],
       })
         .populate("businessId")
@@ -655,9 +665,15 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+          {
+            dateOfExperience: {
+              $gte: new Date(startDate),
+              $lt: new Date(endDate),
+            },
+          },
         ],
       })
         .populate("businessId")
@@ -675,9 +691,10 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
         ],
       })
         .populate("businessId")
@@ -695,9 +712,10 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
           { rating: parseInt(rating) },
-          { createdAt: { $lte: new Date(endDate) } },
+          { dateOfExperience: { $lte: new Date(endDate) } },
         ],
       })
         .populate("businessId")
@@ -714,8 +732,9 @@ const searchReviews = async (req, res) => {
     if (rating && startDate && !endDate) {
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { rating: parseInt(rating) },
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
         ],
       })
         .populate("businessId")
@@ -732,8 +751,9 @@ const searchReviews = async (req, res) => {
     if (rating && !startDate && endDate) {
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { rating: parseInt(rating) },
-          { createdAt: { $lte: new Date(endDate) } },
+          { dateOfExperience: { $lte: new Date(endDate) } },
         ],
       })
         .populate("businessId")
@@ -752,8 +772,9 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
         ],
       })
         .populate("businessId")
@@ -771,8 +792,9 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $lte: new Date(endDate) } },
+          { dateOfExperience: { $lte: new Date(endDate) } },
         ],
       })
         .populate("businessId")
@@ -791,8 +813,9 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $gte: new Date(startDate) } },
+          { dateOfExperience: { $gte: new Date(startDate) } },
         ],
       })
         .populate("businessId")
@@ -810,8 +833,9 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $lte: new Date(endDate) } },
+          { dateOfExperience: { $lte: new Date(endDate) } },
         ],
       })
         .populate("businessId")
@@ -830,8 +854,14 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+          {
+            dateOfExperience: {
+              $gte: new Date(startDate),
+              $lt: new Date(endDate),
+            },
+          },
         ],
       })
         .populate("businessId")
@@ -850,8 +880,14 @@ const searchReviews = async (req, res) => {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
         $and: [
+          { isDeleted: false },
           { createdBy: findUser },
-          { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate) } },
+          {
+            dateOfExperience: {
+              $gte: new Date(startDate),
+              $lt: new Date(endDate),
+            },
+          },
         ],
       })
         .populate("businessId")
@@ -868,7 +904,11 @@ const searchReviews = async (req, res) => {
     if (name && rating) {
       const findUser = await User.findOne({ name: new RegExp(name, "i") });
       const reviews = await Review.find({
-        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+        $and: [
+          { isDeleted: false },
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -884,7 +924,11 @@ const searchReviews = async (req, res) => {
     if (email && rating) {
       const findUser = await User.findOne({ email: new RegExp(email, "i") });
       const reviews = await Review.find({
-        $and: [{ createdBy: findUser }, { rating: parseInt(rating) }],
+        $and: [
+          { isDeleted: false },
+          { createdBy: findUser },
+          { rating: parseInt(rating) },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -907,10 +951,21 @@ const searchReviews = async (req, res) => {
     }
 
     if (startDate && endDate) {
-      filter.createdAt = { $gte: new Date(startDate), $lt: new Date(endDate) };
+      filter.dateOfExperience = {
+        $gte: new Date(startDate),
+        $lt: new Date(endDate),
+      };
     }
     if (startDate && endDate) {
-      const reviews = await Review.find(filter)
+      const reviews = await Review.find({
+        $and: [
+          { isDeleted: false },
+          {
+            $gte: new Date(startDate),
+            $lt: new Date(endDate),
+          },
+        ],
+      })
         .populate("businessId")
         .populate({
           path: "replies",
@@ -924,7 +979,9 @@ const searchReviews = async (req, res) => {
       return res.status(200).send(reviews);
     }
     if (rating) {
-      const reviews = await Review.find({ rating: rating })
+      const reviews = await Review.find({
+        $and: [{ rating: rating }, { isDeleted: false }],
+      })
         .populate("businessId")
         .populate({
           path: "replies",
@@ -939,7 +996,9 @@ const searchReviews = async (req, res) => {
     }
     if (name) {
       const findUser = await User.findOne(filter);
-      const reviews = await Review.find({ createdBy: findUser })
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { isDeleted: false }],
+      })
         .populate("businessId")
         .populate({
           path: "replies",
@@ -954,7 +1013,9 @@ const searchReviews = async (req, res) => {
     }
     if (email) {
       const findUser = await User.findOne(filter);
-      const reviews = await Review.find({ createdBy: findUser })
+      const reviews = await Review.find({
+        $and: [{ createdBy: findUser }, { isDeleted: false }],
+      })
         .populate("businessId")
         .populate({
           path: "replies",
@@ -969,7 +1030,10 @@ const searchReviews = async (req, res) => {
     }
     if (startDate) {
       const reviews = await Review.find({
-        createdAt: { $gte: new Date(startDate) },
+        $and: [
+          { createdAt: { $gte: new Date(startDate) } },
+          { isDeleted: false },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -984,7 +1048,12 @@ const searchReviews = async (req, res) => {
     }
     if (endDate) {
       const reviews = await Review.find({
-        createdAt: { $lte: new Date(endDate) },
+        $and: [
+          {
+            createdAt: { $lte: new Date(endDate) },
+          },
+          { isDeleted: false },
+        ],
       })
         .populate("businessId")
         .populate({
@@ -998,7 +1067,7 @@ const searchReviews = async (req, res) => {
       return res.status(200).send(reviews);
     }
     if (!(name && email && startDate && endDate && rating)) {
-      const reviews = await Review.find()
+      const reviews = await Review.find({ isDeleted: false })
         .populate("businessId")
         .populate({
           path: "replies",
