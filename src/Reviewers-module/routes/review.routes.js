@@ -7,6 +7,7 @@ const {
   searchAllReviewsByUser,
   getReviewById,
   importCompanyReview,
+  readAllReviewsForBusiness
 } = require("../controller/review.controller");
 const router = express.Router();
 const review = require("../models/review.models");
@@ -21,6 +22,7 @@ router.post("/createCompanyReview/:Id/:businessId", createCompanyReview);
 router.get("/getReviewById/:id", getReviewById);
 router.get("/getAllReviews", readAllReviews);
 router.get("/getAllReviewsByUser/:userId", readAllReviewsByUser);
+router.get("/getAllReviewsForBusiness/:businessId", readAllReviewsForBusiness);
 router.get("/searchAllReviewsByUser/:userId", searchAllReviewsByUser);
 router.put("/updateReview/:reviewId", updateCompanyReview);
 router.post("/importCompanyReview/:businessId", importCompanyReview);
