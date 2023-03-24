@@ -31,6 +31,9 @@ const updateBusinessValidation = (data) => {
     companyName: joi.string(),
     website: joi.string(),
     password: joi.string().alphanum(),
+    locationName: joi.string(),
+    locationId: joi.string(),
+    street: joi.string(),
   });
   return schema.validate(data);
 };
