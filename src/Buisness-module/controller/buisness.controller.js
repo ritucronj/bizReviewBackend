@@ -463,7 +463,7 @@ const getBusinessById = async (req, res) => {
 };
 
 const updateBusinessProfile = async (req, res) => {
-  console.log("test", req.params.id);
+  console.log("test", req.body);
   try {
     const id = req.params.id;
     if (req.body.password) {
