@@ -603,7 +603,7 @@ const searchReviews = async (req, res) => {
           {
             dateOfExperience: {
               $gte: new Date(startDate),
-              $lt: new Date(endDate),
+              $lte: new Date(endDate),
             },
           },
         ],
@@ -671,7 +671,7 @@ const searchReviews = async (req, res) => {
           {
             dateOfExperience: {
               $gte: new Date(startDate),
-              $lt: new Date(endDate),
+              $lte: new Date(endDate),
             },
           },
         ],
@@ -859,7 +859,7 @@ const searchReviews = async (req, res) => {
           {
             dateOfExperience: {
               $gte: new Date(startDate),
-              $lt: new Date(endDate),
+              $lte: new Date(endDate),
             },
           },
         ],
@@ -885,7 +885,7 @@ const searchReviews = async (req, res) => {
           {
             dateOfExperience: {
               $gte: new Date(startDate),
-              $lt: new Date(endDate),
+              $lte: new Date(endDate),
             },
           },
         ],
@@ -953,7 +953,7 @@ const searchReviews = async (req, res) => {
     if (startDate && endDate) {
       filter.dateOfExperience = {
         $gte: new Date(startDate),
-        $lt: new Date(endDate),
+        $lte: new Date(endDate),
       };
     }
     if (startDate && endDate) {
@@ -963,7 +963,7 @@ const searchReviews = async (req, res) => {
           {
             dateOfExperience: {
               $gte: new Date(startDate),
-              $lt: new Date(endDate),
+              $lte: new Date(endDate),
             },
           },
         ],

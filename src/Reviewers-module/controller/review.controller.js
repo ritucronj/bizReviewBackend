@@ -67,11 +67,13 @@ const readAllReviewsByUser = async (req, res) => {
   }
 };
 
-const readAllReviewsForBusiness= async (req, res) => {
+const readAllReviewsForBusiness = async (req, res) => {
   const businessId = req.params.businessId;
   try {
-    const reviews = await review
-      .find({ businessId: businessId, isDeleted: false })
+    const reviews = await review.find({
+      businessId: businessId,
+      isDeleted: false,
+    });
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
@@ -87,13 +89,15 @@ const searchAllReviewsByUser = async (req, res) => {
     filters.dateOfExperience = { $gte: new Date(fromDate) };
   if (toDate && !fromDate) {
     if (!filters.dateOfExperience) filters.dateOfExperience = {};
-    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(new Date(toDate).getDate());;
+    filters.dateOfExperience["$lte"] = new Date(toDate).setDate(
+      new Date(toDate).getDate()
+    );
   }
   if (fromDate && toDate) {
     filters.dateOfExperience = {
       $gte: new Date(fromDate),
-      $lte: new Date(toDate).setDate(new Date(toDate).getDate()) 
-     };
+      $lte: new Date(toDate).setDate(new Date(toDate).getDate()),
+    };
   }
   if (search) {
     const regex = new RegExp(search, "i");
@@ -103,7 +107,7 @@ const searchAllReviewsByUser = async (req, res) => {
 
     filters.businessId = findBusiness && findBusiness._id.toString();
   }
-  if (rating) filters.rating =  rating ? Number(rating) : 0 ;
+  if (rating) filters.rating = rating ? Number(rating) : 0;
   try {
     const reviews = await review
       .find(filters)
@@ -164,10 +168,16 @@ const importCompanyReview = async (req, res) => {
     // let reviewsData = [];
     reviews.filter(async (item) => {
       let createdBy = await user.find({ email: item.email });
-      item.createdBy = createdBy[0]?._id.valueOf();
-      item.businessId = businessId;
-      // reviewsData.push(
-      try {
+      if (
+        createdBy &&
+        createdBy[0] &&
+        createdBy[0]?._id &&
+        createdBy[0]?._id.valueOf()
+      ) {
+        item.createdBy = createdBy[0]?._id.valueOf();
+        item.businessId = businessId;
+        // reviewsData.push(
+        // try {
         const reviewData = new review({
           title: item.title,
           createdBy: item.createdBy,
@@ -176,11 +186,13 @@ const importCompanyReview = async (req, res) => {
           description: item.description,
           dateOfExperience: item.dateofexperience,
         });
+
         // );
         const savedReview = await reviewData.save();
         res.status(201).json("Reviews imported successfully");
-      } catch (error) {
-        res.status(400).send("Invalid Data");
+        // }
+      } else {
+        res.status(400).send(`${item.email} not found`);
       }
     });
   } catch (err) {
@@ -196,5 +208,5 @@ module.exports = {
   updateCompanyReview,
   getReviewById,
   importCompanyReview,
-  readAllReviewsForBusiness
+  readAllReviewsForBusiness,
 };
