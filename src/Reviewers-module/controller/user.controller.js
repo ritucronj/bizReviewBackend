@@ -143,7 +143,7 @@ const ssoRegisterAndLogin = async (req, res) => {
             await user.create({
               name: name,
               email: email,
-              profilePicture: picture.data.url,
+              profilePicture: picture && picture.data && picture.data.url,
               isEmailVerified: true,
               status: "active",
             })
