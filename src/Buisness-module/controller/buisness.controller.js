@@ -1173,35 +1173,28 @@ const importCompanies = async (req, res) => {
       user && user._id
     ) {
 
-    businesses.map(async (item) => {
+  businesses.forEach(async (item) => {
         businessFound = await Business.findOne({
           website: item.website,
         });
-        // console.log('businessFound',businessFound)
         if (!businessFound) {
           console.log('inside if')
           item.createdByUser = true;
           item.createdBy = user._id;
           item.uId=uuidv4();
           const business = await new Business(item);
-  
-          // Save the business object to the database
          await business.save();
-  
-    
-        } 
+        } else{
+           return false;
+        }
              
     });
   } else{
-    console.log('inside user not found')
     res.status(400).send("User not found");
   }
 
    if(!businessFound && user){
-    console.log('inside companies added',businessFound)
     res.status(201).send({message:'companies added'});
-   }else{
-    res.status(201).send("One or more company already Exists");
    }
   } catch (err) {
     console.log(err)
