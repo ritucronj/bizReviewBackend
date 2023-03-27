@@ -1162,6 +1162,53 @@ const contactUser = async (req, res) => {
   }
 };
 
+
+const importCompanies = async (req, res) => {
+  let businessFound;
+  try {
+    let businesses = req.body;
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (
+      user && user._id
+    ) {
+
+    businesses.map(async (item) => {
+        businessFound = await Business.findOne({
+          website: item.website,
+        });
+        // console.log('businessFound',businessFound)
+        if (!businessFound) {
+          console.log('inside if')
+          item.createdByUser = true;
+          item.createdBy = user._id;
+          item.uId=uuidv4();
+          const business = await new Business(item);
+  
+          // Save the business object to the database
+         await business.save();
+  
+    
+        } 
+             
+    });
+  } else{
+    console.log('inside user not found')
+    res.status(400).send("User not found");
+  }
+
+   if(!businessFound && user){
+    console.log('inside companies added',businessFound)
+    res.status(201).send({message:'companies added'});
+   }else{
+    res.status(201).send("One or more company already Exists");
+   }
+  } catch (err) {
+    console.log(err)
+    res.status(500).send("Server Error");
+  }
+};
+
 module.exports = {
   createBusiness,
   loginBusiness,
@@ -1189,4 +1236,5 @@ module.exports = {
   deleteMultipleSubscription,
   contactUser,
   getBusinessById,
+  importCompanies
 };
