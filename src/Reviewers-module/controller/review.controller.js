@@ -166,35 +166,38 @@ const importCompanyReview = async (req, res) => {
     let reviews = req.body;
     const businessId = req.params.businessId;
     // let reviewsData = [];
-    reviews.filter(async (item) => {
-      let createdBy = await user.find({ email: item.email });
-      if (
-        createdBy &&
-        createdBy[0] &&
-        createdBy[0]?._id &&
-        createdBy[0]?._id.valueOf()
-      ) {
-        item.createdBy = createdBy[0]?._id.valueOf();
-        item.businessId = businessId;
-        // reviewsData.push(
-        // try {
-        const reviewData = new review({
-          title: item.title,
-          createdBy: item.createdBy,
-          businessId: businessId,
-          rating: item.rating,
-          description: item.description,
-          dateOfExperience: item.dateofexperience,
-        });
+    const business = await businessModel.findById(businessId);
+    if (business && business._id) {
+      reviews.forEach(async (item) => {
+        let createdBy = await user.find({ email: item.email });
+        if (
+          createdBy &&
+          createdBy[0] &&
+          createdBy[0]?._id &&
+          createdBy[0]?._id.valueOf()
+        ) {
+          item.createdBy = createdBy[0]?._id.valueOf();
+          item.businessId = businessId;
+          const reviewData = new review({
+            title: item.title,
+            createdBy: item.createdBy,
+            businessId: businessId,
+            rating: item.rating,
+            description: item.description,
+            dateOfExperience: item.dateofexperience,
+          });
 
-        // );
-        const savedReview = await reviewData.save();
-        res.status(201).json("Reviews imported successfully");
-        // }
-      } else {
-        res.status(400).send(`${item.email} not found`);
-      }
-    });
+          // );
+          const savedReview = await reviewData.save();
+          res.status(201).json("Reviews imported successfully");
+          // }
+        } else {
+          res.status(400).send(`${item.email} not found`);
+        }
+      });
+    } else {
+      res.status(400).send("Business not found");
+    }
   } catch (err) {
     res.status(500).send("Server Error");
   }
