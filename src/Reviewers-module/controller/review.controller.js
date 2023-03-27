@@ -162,14 +162,14 @@ const getReviewById = async (req, res) => {
 };
 
 const importCompanyReview = async (req, res) => {
+  var createdBy;
   try {
     let reviews = req.body;
     const businessId = req.params.businessId;
-    // let reviewsData = [];
     const business = await businessModel.findById(businessId);
     if (business && business._id) {
       reviews.forEach(async (item) => {
-        let createdBy = await user.find({ email: item.email });
+        createdBy = await user.find({ email: item.email });
         if (
           createdBy &&
           createdBy[0] &&
@@ -186,17 +186,15 @@ const importCompanyReview = async (req, res) => {
             description: item.description,
             dateOfExperience: item.dateofexperience,
           });
-
-          // );
-          const savedReview = await reviewData.save();
-          res.status(201).json("Reviews imported successfully");
-          // }
+          await reviewData.save();
         } else {
-          res.status(400).send(`${item.email} not found`);
+          // res.status(400).send(`${item.email} not found`);
+          return false;
         }
       });
-    } else {
-      res.status(400).send("Business not found");
+    }
+    if (business) {
+      res.status(201).send({ message: "Reviews added successfully" });
     }
   } catch (err) {
     res.status(500).send("Server Error");
