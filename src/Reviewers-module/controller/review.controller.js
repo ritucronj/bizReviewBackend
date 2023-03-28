@@ -162,7 +162,12 @@ const getReviewById = async (req, res) => {
 };
 
 const importCompanyReview = async (req, res) => {
-  var createdBy;
+  let createdBy = [];
+  req.body.map((item) => {
+    if (item.email) {
+      createdBy.push(item.email);
+    }
+  });
   try {
     let reviews = req.body;
     const businessId = req.params.businessId;
@@ -187,13 +192,16 @@ const importCompanyReview = async (req, res) => {
             dateOfExperience: item.dateofexperience,
           });
           await reviewData.save();
+          return reviewData;
         } else {
           // res.status(400).send(`${item.email} not found`);
           return false;
         }
       });
     }
-    if (business) {
+    const userData = await user.find({ email: { $in: createdBy } });
+
+    if (business && userData) {
       res.status(201).send({ message: "Reviews added successfully" });
     }
   } catch (err) {
