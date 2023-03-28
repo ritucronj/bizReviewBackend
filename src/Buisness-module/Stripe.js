@@ -82,6 +82,7 @@ const router = express.Router();
 const secretkey = process.env.STRIPE_SECRET_KEY;
 const stripe = require("stripe")(secretkey);
 const Business = require("./models/business.model");
+const contactUserEmail = require('../utils/SendMail');
 
 require("dotenv").config();
 let name;
@@ -149,6 +150,10 @@ router.get("/success1", async (req, res) => {
       },
       { new: true }
     );
+
+    if(business && business.planPurchaseDate && business.planPrice){
+      contactUserEmail(business.companyName, business.email, `Your Payment of ${business.planPrice} was sucessful for the plan ${business.planType}`);
+    }
     res.redirect(`${process.env.SERVER_ADDR1}/success`);
   } catch (err) {
     console.log(err);

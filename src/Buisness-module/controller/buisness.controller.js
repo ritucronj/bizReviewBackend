@@ -463,7 +463,6 @@ const getBusinessById = async (req, res) => {
 };
 
 const updateBusinessProfile = async (req, res) => {
-  console.log("test", req.body);
   try {
     const id = req.params.id;
     if (req.body.password) {
@@ -1172,6 +1171,8 @@ const importCompanies = async (req, res) => {
     if (
       user && user._id
     ) {
+
+      console.log('businesses',businesses,req.body)
 
   businesses && businesses.length && businesses.forEach(async (item) => {
         businessFound = await Business.findOne({

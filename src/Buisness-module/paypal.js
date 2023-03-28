@@ -4,6 +4,7 @@ const paypal = require("paypal-rest-sdk");
 // const paypalId = require("@paypal/checkout-server-sdk");
 require("dotenv").config();
 const Business = require("./models/business.model");
+const contactUserEmail = require('../utils/SendMail');
 const serverAddr = process.env.SERVER_ADDR1;
 const Port = process.env.PORT;
 const SERVER_ADDR1 = process.env.SERVER_ADDR1;
@@ -294,6 +295,9 @@ router.get("/successpaypal", async function (req, res) {
             },
             { new: true }
           );
+          if(business && business.planPurchaseDate && business.planPrice){
+            contactUserEmail(business.companyName, business.email, `Your Payment of ${business.planPrice} was sucessful for the plan ${business.planType}`);
+          }
           // res.send("Payment success");
           res.redirect(`${SERVER_ADDR1}/success`);
         } catch (err) {
