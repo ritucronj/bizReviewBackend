@@ -79,14 +79,14 @@ router.get("/success1", async (req, res) => {
         `Your Payment of $${business.planPrice} was sucessful for the plan ${business.planType}`
       );
     }
-    res.redirect(`${process.env.SERVER_ADDR1}/success`);
+    res.redirect(`${process.env.SERVER_ADDR}/success`);
   } catch (err) {
     console.log(err);
   }
 });
 router.get("/cancel1", function (req, res) {
   // res.send("Cancelled");
-  res.redirect(`${process.env.SERVER_ADDR1}/cancel`);
+  res.redirect(`${process.env.SERVER_ADDR}/cancel`);
 });
 
 module.exports = router;

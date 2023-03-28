@@ -5,9 +5,9 @@ const paypal = require("paypal-rest-sdk");
 require("dotenv").config();
 const Business = require("./models/business.model");
 const { contactUserEmail } = require("../utils/SendMail");
-const serverAddr = process.env.SERVER_ADDR1;
+const serverAddr = process.env.SERVER_ADDR;
 const Port = process.env.PORT;
-const SERVER_ADDR1 = process.env.SERVER_ADDR1;
+const SERVER_ADDR = process.env.SERVER_ADDR;
 
 paypal.configure({
   mode: "sandbox",
@@ -119,7 +119,7 @@ router.get("/successpaypal", async function (req, res) {
             );
           }
           // res.send("Payment success");
-          res.redirect(`${SERVER_ADDR1}/success`);
+          res.redirect(`${SERVER_ADDR}/success`);
         } catch (err) {
           console.log(err);
         }
@@ -130,7 +130,7 @@ router.get("/successpaypal", async function (req, res) {
 
 router.get("/cancel", function (req, res) {
   // res.send("Cancelled");
-  res.redirect(`${SERVER_ADDR1}/cancel`);
+  res.redirect(`${SERVER_ADDR}/cancel`);
 });
 
 module.exports = router;

@@ -23,7 +23,7 @@ const sendVerifyEMail = async (name, email, uId) => {
       to: email,
       subject: `Verify your account`,
       html: `<p> Hi  ${name}
-        , <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="${process.env.SERVER_ADDR1}/createPassword?id=${uId}"> Verification Link</a> <br> <br> The BizReview Team`,
+        , <br><br>  Click this link to verify your BizReview account.<br> <br> <a href="${process.env.SERVER_ADDR}/createPassword?id=${uId}"> Verification Link</a> <br> <br> The BizReview Team`,
     };
 
     transport.sendMail(mailOptions, function (error, info) {
@@ -131,8 +131,6 @@ const contactUserEmail = async (name, email, mailBody) => {
     });
   } catch (error) {}
 };
-
-
 
 module.exports = {
   sendVerifyEMail,
