@@ -45,8 +45,8 @@ router.post("/subscribe1/:plan", function (req, res) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: `http://localhost:${Port}/successpaypal`,
-      cancel_url: `http://localhost:${Port}/cancel`,
+      return_url: `http://206.81.14.11:${Port}/successpaypal`,
+      cancel_url: `http://206.81.14.11:${Port}/cancel`,
     },
     transactions: [
       {
