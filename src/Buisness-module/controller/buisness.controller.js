@@ -1173,7 +1173,7 @@ const importCompanies = async (req, res) => {
       user && user._id
     ) {
 
-  businesses.forEach(async (item) => {
+  businesses && businesses.length && businesses.forEach(async (item) => {
         businessFound = await Business.findOne({
           website: item.website,
         });
