@@ -112,7 +112,7 @@ const searchAllReviewsByUser = async (req, res) => {
     const reviews = await review
       .find(filters)
       .populate("businessId")
-      .populate("createdBy");
+      .populate({ path: "createdBy", model: "user" });
     res.status(200).json(reviews);
   } catch (err) {
     console.error(err);
