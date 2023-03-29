@@ -53,6 +53,7 @@ router.post('/upload', upload.single('profilePicture'), async (req, res) => {
       const imageUrl = data.Location;
 
       if(user){
+        console.log('email',email)
        await User.updateOne(
             { email: email },
             { $set: { profilePicture:imageUrl } }).then(()=>{
