@@ -180,54 +180,18 @@ const ssoRegisterAndLogin = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
   try {
-    let files = req.files;
-    const updatePromise = new Promise(async (resolve, reject) => {
-      const { error } = userUpdateValidataion(req.body);
-      if (error) reject(new Error(error.details[0].message));
-      const findUser = await user.findOneAndUpdate(req.params.id, req.body, {
-        new: true,
-      });
-      if (findUser === null) reject(new Error("No User Found"));
-      else resolve(findUser);
+    const id = req.params.Id;
+    const updateData = await user.findByIdAndUpdate(id, req.body, {
+      new: true,
     });
-    updatePromise
-      .then((data) => {
-        return res.status(statusCodes[200].value).send({ data: data });
-      })
-      .catch((err) => {
-        return res.status(statusCodes[400].value).send({ msg: err.message });
-      });
+    return res
+      ?.status(200)
+      .send({ message: `Profile updated successfully.`, user: updateData });
   } catch (error) {
-    return res.status(statusCodes[500].value).send({ msg: error.message });
+    return res?.status(500).send({ messgae: `Internal Server Error` });
   }
 };
 
-const deleteUserProfile = async (req, res) => {
-  try {
-    let userId = req.params.Id;
-    const deletePromise = new Promise(async (resolve, reject) => {
-      const findUser = await user.findOneAndUpdate(
-        { uId: userId },
-        { isDeleted: true },
-        { new: true }
-      );
-      if (findUser === null) reject(new Error("No User Found"));
-      else resolve();
-    });
-    deletePromise.then(async () => {
-      await review.findOneAndUpdate(
-        { createdBy: userId },
-        { isUserActive: false },
-        { new: true }
-      );
-      return res
-        .status(statusCodes[200].value)
-        .send({ msg: "Successfully Deleted" });
-    });
-  } catch (error) {
-    return res.status(statusCodes[500].value).send({ msg: error.message });
-  }
-};
 
 const filterUser = async (req, res) => {
   try {
