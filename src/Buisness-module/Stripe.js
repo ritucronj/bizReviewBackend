@@ -9,18 +9,19 @@ require("dotenv").config();
 let name;
 let price;
 let uid;
+let session;
 
 router.post("/create-checkout-session", async (req, res) => {
   // console.log("payment api", req.body);
   uid = req.body.id;
   name = req.body.name;
   price = req.body.price;
-  const session = await stripe.checkout.sessions.create({
+  session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
       {
         price_data: {
-          currency: "INR",
+          currency: "usd",
           product_data: {
             name: name,
             images: ["https://i.imgur.com/EHyR2nP.png"],
@@ -40,24 +41,28 @@ router.post("/create-checkout-session", async (req, res) => {
 
 router.get("/success1", async (req, res) => {
   // console.log("webhook");
+  // const result = stripe.redirectToCheckout({
+  //   sessionId: session.id,
+  // });
+  // console.log("result", result);
   const event = req.body;
   console.log(event);
   const date = new Date();
-  stripe.charges.create(
-    {
-      amount: price, // Amount in cents
-      currency: "inr", // Currency in ISO format
-      source: "tok_visa", // Token representing the credit card to charge
-    },
-    async function (err, charge) {
-      // console.log(err, charge);
-      if (err) {
-        console.error(err);
-      } else {
-        console.log("Payment successful! Payment ID: " + charge.id);
-      }
-    }
-  );
+  // stripe.charges.create(
+  //   {
+  //     amount: `${price}00`, // Amount in cents
+  //     currency: "usd", // Currency in ISO format
+  //     source: "tok_visa", // Token representing the credit card to charge
+  //   },
+  //   async function (err, charge) {
+  //     // console.log(err, charge);
+  //     if (err) {
+  //       console.error(err);
+  //     } else {
+  //       console.log("Payment successful! Payment ID: " + charge.id);
+  //     }
+  //   }
+  // );
 
   try {
     const business = await Business.findByIdAndUpdate(
