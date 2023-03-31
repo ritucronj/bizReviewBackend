@@ -200,9 +200,17 @@ const importCompanyReview = async (req, res) => {
       });
     }
     const userData = await user.find({ email: { $in: createdBy } });
-
-    if (business && userData) {
-      res.status(201).send({ message: "Reviews added successfully" });
+    if (business && userData.length) {
+      // console.log(reviews.length, userData);
+      if (userData.length === reviews.length)
+        res.status(201).send({ message: "Reviews added successfully" });
+      if (userData.length < reviews.length) {
+        res.status(201).send({
+          message: `${userData.length} out of ${reviews.length} Reviews added successfully`,
+        });
+      }
+    } else {
+      res.status(400).send({ message: "Users not found" });
     }
   } catch (err) {
     res.status(500).send("Server Error");
