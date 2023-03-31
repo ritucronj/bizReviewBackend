@@ -1374,38 +1374,40 @@ const contactUser = async (req, res) => {
 };
 
 const importCompanies = async (req, res) => {
-  let businessFound;
   try {
     let businesses = req.body;
     const userId = req.params.userId;
     const user = await User.findById(userId);
     if (user && user._id) {
-      console.log("businesses", businesses, req.body);
-
-      businesses &&
-        businesses.length &&
-        businesses.forEach(async (item) => {
-          businessFound = await Business.findOne({
-            website: item.website,
-          });
-          if (!businessFound) {
-            console.log("inside if");
-            item.createdByUser = true;
-            item.createdBy = user._id;
-            item.uId = uuidv4();
-            const business = await new Business(item);
-            await business.save();
-          } else {
-            return false;
+      let unAvailableCompanies=[];
+      if (businesses && businesses.length) {
+        for (let i = 0; i < businesses.length; i++) {
+          const item = businesses[i];
+          const businessFound = await Business.findOne({ website: item.website });
+          if(!businessFound){
+            unAvailableCompanies.push(item)
           }
-        });
-    } else {
+        }
+      }
+
+      if(unAvailableCompanies && unAvailableCompanies.length){
+        for (let i = 0; i < unAvailableCompanies.length; i++) {
+          const item2 = unAvailableCompanies[i];
+          item2.createdByUser = true;
+          item2.createdBy = user._id;
+          item2.uId = uuidv4();
+          const business = await new Business(item2);
+          await business.save();
+        }
+        res.status(201).send({message:`${unAvailableCompanies.length} out of ${businesses.length} companies added successfully`});
+      } else {
+        res.status(409).send({message:"Companies already exists in database"});
+      }
+    }
+    else {
       res.status(400).send("User not found");
     }
-
-    if (!businessFound && user) {
-      res.status(201).send({ message: "companies added" });
-    }
+   
   } catch (err) {
     console.log(err);
     res.status(500).send("Server Error");
