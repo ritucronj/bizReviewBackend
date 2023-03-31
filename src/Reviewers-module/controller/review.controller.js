@@ -164,8 +164,8 @@ const getReviewById = async (req, res) => {
 const importCompanyReview = async (req, res) => {
   let createdBy = [];
   req.body.map((item) => {
-    if (item.email) {
-      createdBy.push(item.email);
+    if (item.Email) {
+      createdBy.push(item.Email);
     }
   });
   try {
@@ -174,7 +174,7 @@ const importCompanyReview = async (req, res) => {
     const business = await businessModel.findById(businessId);
     if (business && business._id) {
       reviews.forEach(async (item) => {
-        createdBy = await user.find({ email: item.email });
+        createdBy = await user.find({ email: item.Email });
         if (
           createdBy &&
           createdBy[0] &&
@@ -184,12 +184,12 @@ const importCompanyReview = async (req, res) => {
           item.createdBy = createdBy[0]?._id.valueOf();
           item.businessId = businessId;
           const reviewData = new review({
-            title: item.title,
+            title: item.Title,
             createdBy: item.createdBy,
             businessId: businessId,
-            rating: item.rating,
-            description: item.description,
-            dateOfExperience: item.dateofexperience,
+            rating: item.Rating,
+            description: item.Description,
+            dateOfExperience: item.DateOfExperience,
           });
           await reviewData.save();
           return reviewData;
@@ -201,10 +201,9 @@ const importCompanyReview = async (req, res) => {
     }
     const userData = await user.find({ email: { $in: createdBy } });
     if (business && userData.length) {
-      // console.log(reviews.length, userData);
-      if (userData.length === reviews.length)
+      if (userData.length === reviews.length) {
         res.status(201).send({ message: "Reviews added successfully" });
-      if (userData.length < reviews.length) {
+      } else if (userData.length < reviews.length) {
         res.status(201).send({
           message: `${userData.length} out of ${reviews.length} Reviews added successfully`,
         });
