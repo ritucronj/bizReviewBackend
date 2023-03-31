@@ -1399,7 +1399,7 @@ const importCompanies = async (req, res) => {
           const business = await new Business(item2);
           await business.save();
         }
-        res.status(201).send({message:`${unAvailableCompanies.length} out of ${businesses.length} companies added successfully`});
+        res.status(201).send({message:`${unAvailableCompanies.length} out of ${businesses.length} companies added successfully. ${businesses.length-unAvailableCompanies.length} already exists!`});
       } else {
         res.status(409).send({message:"Companies already exists in database"});
       }
