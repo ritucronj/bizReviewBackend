@@ -5,6 +5,7 @@ const { updateReviewValidation } = require("../services/Validation-handler");
 const { v4: uuidv4 } = require("uuid");
 const businessModel = require("../../Buisness-module/models/business.model");
 const { find } = require("../models/review.models");
+const moment = require("moment");
 
 const createCompanyReview = async (req, res) => {
   try {
@@ -189,7 +190,7 @@ const importCompanyReview = async (req, res) => {
             businessId: businessId,
             rating: item.Rating,
             description: item.Description,
-            dateOfExperience: item.DateOfExperience,
+            dateOfExperience: new Date(item.DateOfExperience),
           });
           await reviewData.save();
           return reviewData;
@@ -203,7 +204,7 @@ const importCompanyReview = async (req, res) => {
     if (business && userData.length) {
       if (userData.length === reviews.length) {
         res.status(201).send({ message: "Reviews added successfully" });
-      } else if (userData.length < reviews.length) {
+      } else {
         res.status(201).send({
           message: `${userData.length} out of ${reviews.length} Reviews added successfully`,
         });
