@@ -144,6 +144,14 @@ const businessSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user"
     },
+    phoneByUser:{
+      type: String,
+      default: "",
+    },
+    emailByUser:{
+      type: String,
+      default: "",
+    },
 
   },
   { timestamps: true }
